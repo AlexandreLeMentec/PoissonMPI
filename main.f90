@@ -1,7 +1,7 @@
 program main
 
     use m_type
-    use mpi
+    use mpi_f08
 
     implicit none
 
@@ -22,7 +22,7 @@ program main
     !setup Ranks/IDs for each process
     call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierr)
 
-    print *, "Hello world from process", rank, "of", nprocs
+    print *, "Hello world from process", rank+1, "of", nprocs
 
     !Finalize MPI
     !Finalizer subroutine
