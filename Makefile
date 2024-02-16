@@ -1,4 +1,4 @@
-FC = gfortran
+FC = mpif90
 OPT = -g #-O0 -fbounds-check
 
 OBJ = m_type.o main.o subroutines.o
@@ -10,7 +10,7 @@ prog:	$(OBJ)
 m_type.o:	m_type.f90
 	$(FC) $(OPT) m_type.f90 -c	
 
-main.o :	main.f90
+main.o :	main.f90 
 	$(FC) $(OPT) main.f90 -c
 
 subroutines.o :	subroutines.f90
