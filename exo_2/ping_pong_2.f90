@@ -27,18 +27,17 @@ program ping_pong_2
 
     if (rang == 0) then
       call random_number(valeurs)
-      temps_fin=MPI_WTIME()
+      temps_debut=MPI_WTIME()
 
       call MPI_Send(valeurs, nb_valeurs, MPI_REAL, 1, etiquette, MPI_COMM_WORLD)
-      temps_debut=MPI_WTIME()
-  
-  !......................................................................
+
      call MPI_Recv(valeurs, nb_valeurs, MPI_REAL, 1, etiquette, MPI_COMM_WORLD, statut)
-      print ('("Moi, processus 0, j''ai envoye et recu ",i5, &
+     temps_fin=MPI_WTIME()
+     print ('("Moi, processus 0, j''ai envoye et recu ",i5, &
           & " valeurs (derniere = ",f4.2,") du processus 1", &
           & " en ",f8.6," secondes.")'), &
             nb_valeurs,valeurs(nb_valeurs),temps_fin-temps_debut
-  
+
   !......................................................................
     elseif (rang == 1) then
         call MPI_Send(valeurs, nb_valeurs, MPI_REAL, 0, etiquette, MPI_COMM_WORLD)
