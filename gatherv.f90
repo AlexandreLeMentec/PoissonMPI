@@ -19,7 +19,7 @@ program gatherv
 
     longueur_tranche = nb_valeurs/nb_procs               
     reste = mod(nb_valeurs, nb_procs)                      ! le reste de la division de nb_valeurs par le nombre de processus, &
-                                             !nécessaire pour déterminer la longueur des tranches pour les processus supplémentaires
+                             !nécessaire pour déterminer la longueur des tranches pour les processus supplémentaires
     
     
     ! Si le rang du processus est inférieur au reste, il y aura une tranche supplémentaire pour ce processus
