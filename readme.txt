@@ -4,3 +4,5 @@ mpiexec --allow-run-as-root --use-hwthread-cpus ./prog.exe            ! tous les
 mpif90 -c main.f90
 mpif90 main.o -o main
 mpiexec -n 4 ./main
+
+mpiexec --oversubscribe -n 7 allreduce
