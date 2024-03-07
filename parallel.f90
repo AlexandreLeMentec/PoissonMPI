@@ -18,6 +18,7 @@ MODULE parallel
 
   !Rang du sous-domaine local
   INTEGER                                   :: rang
+  INTEGER                                   :: ierr
   !Nombre de processus
   INTEGER                                   :: nb_procs
   !Communicateur de la topologie cartesienne
@@ -46,16 +47,13 @@ CONTAINS
     !Initialisation pour chaque processus de son rang et du
     !nombre total de processus nb_procs
     !************
-
     !Initialisation de MPI
-    
-
+    call MPI_INIT(ierr)
     !Savoir quel processus je suis
-    
-
+    !call MPI_COMM_RANK(MPI_COMM_WORLD, rang)
     !Connaitre le nombre total de processus
-    
-
+    !call MPI_COMM_SIZE(MPI_COMM_WORLD, nb_procs)
+    !print* , nb_procs, rang
   END SUBROUTINE initialisation_mpi
 
   SUBROUTINE creation_topologie
@@ -224,7 +222,7 @@ CONTAINS
     !************
     !Desactivation de l'environnement MPI
     !************
-
+    call MPI_FINALIZE(ierr)
     ! Nettoyages des types et comm MPI
 
     ! Desactivation de MPI

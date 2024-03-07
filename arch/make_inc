@@ -1,0 +1,47 @@
+############################ -*- Mode: Makefile -*- ###########################
+# make_gnu --- Déclarations pour la génération et l'exécution des TPs MPI
+#                  sur un système Linux avec une distribution MPI et le compilateur Gfortran
+#
+# Auteur          : Denis Girou (CNRS/IDRIS) <Denis.Girou@idris.fr>
+#
+###############################################################################
+
+# Compilateurs
+CF95            = mpif90
+CC              = gcc
+
+# Options de compilation et d'édition de liens
+FFLAGS_TP1      = 
+LDFLAGS_TP1     =
+FFLAGS_TP2      = 
+LDFLAGS_TP2     =
+FFLAGS_TP3      = #-fallow-argument-mismatch
+LDFLAGS_TP3     =
+FFLAGS_TP4      = 
+LDFLAGS_TP4     =
+FFLAGS_TP5      = 
+LDFLAGS_TP5     =
+FFLAGS_TP6      = 
+LDFLAGS_TP6     =
+FFLAGS_TP7      = 
+LDFLAGS_TP7     =
+LDCFLAGS        = -lX11
+FFLAGS_TP8      = 
+LDFLAGS_TP8     =
+FFLAGS          = -O0 -ffree-line-length-none -cpp -Wall \
+                  -fimplicit-none -fcheck=all -fbacktrace \
+                  -ffpe-trap=invalid,zero \
+                  -g -fdefault-real-8 -fdefault-double-8
+
+# Exécutions
+MPIEXEC_TP1     = mpiexec -n 4
+MPIEXEC_TP2     = mpiexec -n 2
+MPIEXEC_TP3     = mpiexec -n 6
+MPIEXEC_TP4     = mpiexec -n 2
+MPIEXEC_TP5     = mpiexec -n 4
+MPIEXEC_TP6     = mpiexec -n 8
+EXEC_TP7_VERIF     =
+MPIEXEC_TP7        = mpiexec -n 4
+MPIEXEC_TP7_CREAT  = mpiexec -n 1
+MPIEXEC_TP8        = mpiexec --use-hwthread-cpus
+EXEC_TP8_VERIF     = mpiexec -n 1
