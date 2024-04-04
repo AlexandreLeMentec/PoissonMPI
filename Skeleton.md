@@ -88,6 +88,10 @@ graph LR
 var[("variables
 and
 files")]
+var ~~~ 2([Subroutine])
+2 ~~~ 3(functions)
+3 ~~~ 4[/"loop"\]
+4 ~~~ 5[["important operations"]]
 ```
 ___
 ```mermaid
