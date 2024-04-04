@@ -3,10 +3,10 @@ program ex_fence
     implicit none
 
     integer, parameter :: assert = 0
-    integer :: code, rang, taille_reel, i, nb_elements, cible, m=4 n=4
-    type(mpi_win) :: mpi_win
+    integer :: code, rang, taille_reel, i, nb_elements, cible, m=4, n=4
+    type(mpi_win) :: win
     integer (kind= MPI_ADDRESS_KIND) :: deplacement, dim_win
-    real(kind= kind(1.d0)), dimension(:), allocatable :: win_local, tab_statut
+    real(kind= kind(1.d0)), dimension(:), allocatable :: win_local, tab
 
     call MPI_INIT()
     call MPI_COMM_RANK(MPI_COMM_WORLD, rang)
@@ -32,14 +32,14 @@ program ex_fence
     call MPI_WIN_FENCE(assert,win)
     if (rang == 0) then
         cible = 1 ; nb_elements = 2; deplacement = 1
-        call MPI_PUT(tab, nb_elemtns, MPI_DOUBLE_PRECISION, cible, deplacement & 
+        call MPI_PUT(tab, nb_elements, MPI_DOUBLE_PRECISION, cible, deplacement, & 
             nb_elements, MPI_DOUBLE_PRECISION, win)
 
     end if 
 
     call MPI_WIN_FENCE(assert,win)
     if (rang == 0 ) then
-        tab(m) = sub(tab(1:m-1))
+        tab(m) = sum(tab(1:m-1))
     else
         win_local(n) = sum(win_local (1 :n-1))
     endif
@@ -48,7 +48,8 @@ program ex_fence
     if (rang == 0) then 
         nb_elements =1 ; deplacement = m-1 
         call MPI_GET(tab, nb_elements, MPI_DOUBLE_PRECISION, cible, deplacement, & 
-            nb_elemnts, MPI_DOUBLE_PRECISION, win)
+            nb_elements, MPI_DOUBLE_PRECISION, win)
     endif
     
-    
+    call mpi_finalize()
+end program ex_fence

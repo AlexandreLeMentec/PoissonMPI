@@ -1,0 +1,43 @@
+############################ -*- Mode: Makefile -*- ###########################
+# make_intel --- Compilateurs Intel
+###############################################################################
+
+# Compilateurs
+CF95            = mpiifort -g -traceback
+CC              = icc
+
+# Options de compilation et d'édition de liens
+FFLAGS_TP1      = 
+LDFLAGS_TP1     =
+FFLAGS_TP2      = 
+LDFLAGS_TP2     =
+FFLAGS_TP3      = 
+LDFLAGS_TP3     =
+FFLAGS_TP4      = 
+LDFLAGS_TP4     =
+FFLAGS_TP5      = #-tcollect
+LDFLAGS_TP5     = #-tcollect
+FFLAGS_TP6      = 
+LDFLAGS_TP6     =
+FFLAGS_TP7      = 
+LDFLAGS_TP7     =
+LDCFLAGS        = -lX11
+FFLAGS_TP8      = 
+LDFLAGS_TP8     =
+
+FFLAGS  = -O0 -ffree-line-length-none -cpp -Wall \
+        -fimplicit-none -fcheck=all -fbacktrace \
+        -ffpe-trap=invalid,zero \
+        -g -fdefault-real-8 -fdefault-double-8
+# Exécutions
+MPIEXEC_TP1     = mpiexec -n 4
+MPIEXEC_TP2     = mpiexec -n 2
+MPIEXEC_TP3     = mpiexec -n 6
+MPIEXEC_TP4     = mpiexec -n 2
+MPIEXEC_TP5     = mpiexec -n 4
+MPIEXEC_TP6     = mpiexec -n 8
+EXEC_TP7_VERIF     =
+MPIEXEC_TP7        = mpiexec -n 4
+MPIEXEC_TP7_CREAT  = mpiexec -n 1
+MPIEXEC_TP8        = mpiexec -n 4
+EXEC_TP8_VERIF     = mpiexec -n 1
