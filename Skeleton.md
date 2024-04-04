@@ -98,7 +98,7 @@ graph TB
 1 --> 2([creation_topologie])
 3[(poisson.data)] -.-> 2
 2 --> 4([domaine])
-4 --> 5(initialisation)
+4 --> 5([initialisation])
 5 --> 6([voisinage])
 6 --> 7([type_derive])
 7 -.-> 8[("derivated type vectors 
@@ -108,6 +108,14 @@ N S E W")]
 .AND.
 (i < i_MAX)"\]
 9 --> 10[["i = i+1"]]
-
-
+10 --> 11[["u = u^{-1}"]]
+11 --> 12([Communication])
+12 --> 13([Calcul])
+13 --> 14("diffnorm = erreur globale")
+14 --> 15[["convergence = (diffnorm < eps)"]]
+15 --> 16[\"END DO"/]
+16 --> 9
+16 --> 17(["Ecrire"])
+17 --> 18([Finalisation])
+18 --> 19((END))
 ```
