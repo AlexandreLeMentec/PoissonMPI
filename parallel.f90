@@ -50,9 +50,9 @@ CONTAINS
     !Initialisation de MPI
     call MPI_INIT(ierr)
     !Savoir quel processus je suis
-    !call MPI_COMM_RANK(MPI_COMM_WORLD, rang)
+    call MPI_COMM_RANK(MPI_COMM_WORLD, rang, ierr)
     !Connaitre le nombre total de processus
-    !call MPI_COMM_SIZE(MPI_COMM_WORLD, nb_procs)
+    call MPI_COMM_SIZE(MPI_COMM_WORLD, nb_procs, ierr)
     !print* , nb_procs, rang
   END SUBROUTINE initialisation_mpi
 
