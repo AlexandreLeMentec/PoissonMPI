@@ -43,5 +43,5 @@ MPIEXEC_TP6     = mpiexec -n 8
 EXEC_TP7_VERIF     =
 MPIEXEC_TP7        = mpiexec -n 4
 MPIEXEC_TP7_CREAT  = mpiexec -n 1
-MPIEXEC_TP8        = mpiexec --use-hwthread-cpus
-EXEC_TP8_VERIF     = mpiexec -n 1
+MPIEXEC_TP8        = mpiexec --allow-run-as-root --use-hwthread-cpus
+EXEC_TP8_VERIF     = mpiexec --allow-run-as-root --use-hwthread-cpus

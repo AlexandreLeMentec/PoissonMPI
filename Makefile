@@ -41,7 +41,7 @@ fort.11: read donnees.dat
 
 exe donnees.dat: poisson poisson.data
 	rm -f donnees.dat
-	/usr/bin/mpiexec -n 4 ./poisson
+	/usr/bin/mpiexec mpiexec --allow-run-as-root --use-hwthread-cpus ./poisson
 #SBATCH	sbatch poisson.slurm
 
 verification: fort.11 calcul_exact
