@@ -43,5 +43,4 @@ program triangle
         print *, a(i,:)
     end do
 
-
 end program triangle
