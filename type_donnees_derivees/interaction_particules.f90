@@ -40,7 +40,7 @@ program interaction_particules
     call MPI_TYPE_CREATE_STRUCT(4,longueurs_blocs, deplacements, types, temp)
     call MPI_GET_ADDRESS(p(2), adresses(2))
     lb = 0
-    extent = MPI_AINT_DIFF(adresses(2)- adresses(1))
+    extent = MPI_AINT_DIFF(adresses(2),adresses(1))
     call MPI_TYPE_CREATE_RESIZED(temp, lb, extent, type_particule)
 
     ! Validation du type structure
