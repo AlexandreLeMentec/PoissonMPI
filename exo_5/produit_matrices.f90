@@ -72,18 +72,18 @@
     
         ! Le processus 0 initialise les matrices A et B
         if (rang == 0) then
-        ! Allocation dynamique de mémoire, entre autres, des matrices A, B et C
-        allocate( A(N,N), B(N,N), C(N,N), CC(N,N) )
-    
-        ! Initialisation de A et B
-        call RANDOM_NUMBER(A)
-        call RANDOM_NUMBER(B)
-    
-        ! Calcul monoprocesseur du produit matriciel A*B
-        CC(:,:) = matmul(A(:,:), B(:,:))
+          ! Allocation dynamique de mémoire, entre autres, des matrices A, B et C
+          allocate( A(N,N), B(N,N), C(N,N), CC(N,N) )
+      
+          ! Initialisation de A et B
+          call RANDOM_NUMBER(A)
+          call RANDOM_NUMBER(B)
+      
+          ! Calcul monoprocesseur du produit matriciel A*B
+          CC(:,:) = matmul(A(:,:), B(:,:))
         else
-        ! Eviter problem avec option -check all
-        allocate(A(0,0),B(0,0),C(0,0))
+          ! Eviter problem avec option -check all
+          allocate(A(0,0),B(0,0),C(0,0))
         end if
     
         ! Allocation dynamique de mémoire des divers tableaux locaux
@@ -92,7 +92,7 @@
         call MPI_TYPE_SIZE(MPI_REAL, taille_type_reel)
     
         ! Construction du type qui correspond a 1 bloc de NL lignes et N colonnes
-          call MPI_TYPE_VECTOR(N, NL, N, MPI_REAL, type_temp)
+        call MPI_TYPE_VECTOR(N, NL, N, MPI_REAL, type_temp)
         taille_deplacement_type_tranche = taille_type_reel*NL
          call MPI_TYPE_CREATE_RESIZED(type_temp, borne_inferieure, taille_deplacement_type_tranche, &
                                  type_tranche)

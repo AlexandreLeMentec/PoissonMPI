@@ -55,7 +55,7 @@ PROGRAM transpose
     DO i=1,nb_lignes
       PRINT *,A(i,:)
     END DO
-
+    
     !Envoi de la matrice A au processus 1 avec le type type_transpose
     CALL MPI_SEND(A,1,type_transpose,1,etiquette,MPI_COMM_WORLD)
 
