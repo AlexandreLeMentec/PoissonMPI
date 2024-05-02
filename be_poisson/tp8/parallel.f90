@@ -18,6 +18,7 @@ MODULE parallel
 
   !Rang du sous-domaine local
   INTEGER                                   :: rang
+  INTEGER                                  :: ierr
   !Nombre de processus
   INTEGER                                   :: nb_procs
   !Communicateur de la topologie cartesienne
@@ -46,15 +47,16 @@ CONTAINS
     !Initialisation pour chaque processus de son rang et du
     !nombre total de processus nb_procs
     !************
-
+  
     !Initialisation de MPI
-    
+    call MPI_INIT(ierr)
 
     !Savoir quel processus je suis
-    
+    call MPI_COMM_RANK(MPI_COMM_WORLD, rang, ierr)
 
     !Connaitre le nombre total de processus
-    
+    call MPI_COMM_SIZE(MPI_COMM_WORLD, nb_procs, ierr)
+
 
   END SUBROUTINE initialisation_mpi
 
@@ -62,9 +64,11 @@ CONTAINS
     !************
     !Creation de la topologie cartesienne
     !************
-
+    INTEGER                                   :: ntx, nty
+    INTEGER                                   :: sx, ex, sy, ey
+    
     !Constantes MPI
-    LOGICAL, PARAMETER                        :: reorganisation = .FALSE.
+    LOGICAL, PARAMETER                        :: reorganisation 
 
     ! Lecture du nombre de points ntx en x et nty en y
     OPEN(10, FILE='poisson.data', STATUS='OLD')
@@ -74,8 +78,11 @@ CONTAINS
 
     !Connaitre le nombre de processus selon x et le nombre de processus
     !selon y en fonction du nombre total de processus
-
+    CALL MPI_DIMS_CREATE(nb_procs, ndims, dims, code)
     !Creation de la grille de processus 2D sans periodicite
+    periods(1) = .FALSE.
+    periods(2) = .FALSE.
+    reorganisation = .FALSE.
 
     IF (rang == 0) THEN
       WRITE (*,'(A)') '-----------------------------------------'
@@ -93,9 +100,8 @@ CONTAINS
     !************
     !Calcul des coordonnées globales limites du sous domaine local
     !************
-
     ! Connaitre mes coordonnees dans la topologie
-    
+    call MPI_CART_COORDS(comm2d, rang, ndims, coords, ierr)
 
     !Calcul pour chaque processus de ses indices de debut et de fin suivant x
     sx = (coords(1)*ntx)/dims(1)+1
@@ -115,11 +121,11 @@ CONTAINS
     !************
     !Calcul des processus voisins pour chaque processus
     !************
-
     !Recherche des voisins Nord et Sud
-
+    call MPI_CART_SHIFT(comm2d, 1, 1, voisin(N), voisin(S), ierr)
 
     !Recherche des voisins Ouest et Est
+    call MPI_CART_SHIFT(comm2d, 2, 1, voisin(W), voisin(E), ierr)
 
     WRITE (*,'(A,i4,A,i4,A,i4,A,i4,A,i4)') "Processus ", rang, &
      " a pour voisin : N", voisin(N), " E", voisin(E), &
@@ -132,7 +138,7 @@ CONTAINS
     !************
     !Creation des types derives type_ligne et type_colonne
     !************
-
+    
     !Creation du type type_ligne pour echanger les points
     !au nord et au sud
 
