@@ -17,9 +17,9 @@ ___
 > ***creation_topologie*** <span style="color:#85d0df">(subroutine)</span>
 >> Read nb of nodes in X and Y **&#9745;**
 >
->> Divide procs in X and Y **&#9744;**
+>> Divide procs in X and Y **&#9745; (but like... kinda??)**
 >
->> Create subsequent 2D grid **&#9744;**
+>> Create subsequent 2D grid **&#9745;**
 
 > ***domaine*** <span style="color:#85d0df">(subroutine)</span>
 >> Know the sub-domain topology's coordinates **&#9744;**
