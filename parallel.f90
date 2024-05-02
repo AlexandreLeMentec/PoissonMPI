@@ -63,6 +63,7 @@ CONTAINS
 
     !Constantes MPI
     LOGICAL, PARAMETER                        :: reorganisation = .FALSE.
+    INTEGER                                   :: i = 1
 
     ! Lecture du nombre de points ntx en x et nty en y
     OPEN(10, FILE='poisson.data', STATUS='OLD')
@@ -73,8 +74,21 @@ CONTAINS
     !Connaitre le nombre de processus selon x et le nombre de processus
     !selon y en fonction du nombre total de processus
 
-    !Creation de la grille de processus 2D sans periodicite
+    ! Cette fonction ne marche que dans le cas dims = 2 et nbprocs = 4, sinon tout explose :)
+    dims(1) = nb_procs - 2
+    dims(2) = nb_procs - 2
 
+    !Creation de la grille de processus 2D sans periodicite
+    coords(1) = 1
+    coords(2) = 1
+    DO i = 1, rang
+      coords(1) = coords(1)+1
+      IF (coords(1) > dims(1)) THEN
+        coords(1) = 1
+        coords(2) = coords(2)+1
+      END IF
+    END DO
+    
     IF (rang == 0) THEN
       WRITE (*,'(A)') '-----------------------------------------'
       WRITE (*,'(A,i4,A)') 'Execution code poisson avec ', nb_procs, ' processus MPI'
