@@ -19,10 +19,10 @@ ___
 >
 >> Divide procs in X and Y **&#9745; (but like... kinda??)** --> TODO: correct with prime divider method **&#9744;**
 >
->> Create subsequent 2D grid **&#9745;**
+>> Create subsequent 2D grid **&#9745;** (no grid object exists so this step is just about removing periodicity)
 
 > ***domaine*** <span style="color:#85d0df">(subroutine)</span>
->> Know the sub-domain topology's coordinates **&#9744;**
+>> Know the sub-domain topology's coordinates **&#9745;**
 >
 >> Compute the max and min indexes of the subdomain along X **&#9745; (corrected)**
 >
