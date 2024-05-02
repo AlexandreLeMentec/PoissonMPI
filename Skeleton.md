@@ -17,16 +17,16 @@ ___
 > ***creation_topologie*** <span style="color:#85d0df">(subroutine)</span>
 >> Read nb of nodes in X and Y **&#9745;**
 >
->> Divide procs in X and Y **&#9745; (but like... kinda??)**
+>> Divide procs in X and Y **&#9745; (but like... kinda??)** --> TODO: correct with prime divider method **&#9744;**
 >
 >> Create subsequent 2D grid **&#9745;**
 
 > ***domaine*** <span style="color:#85d0df">(subroutine)</span>
 >> Know the sub-domain topology's coordinates **&#9744;**
 >
->> Compute the max and min indexes of the subdomain along X **&#9745;**
+>> Compute the max and min indexes of the subdomain along X **&#9745; (corrected)**
 >
->> Compute the max and min indexes of the subdomain along Y **&#9745;**
+>> Compute the max and min indexes of the subdomain along Y **&#9745; (corrected)**
 
 > ***voisinage*** <span style="color:#85d0df">(subroutine)</span>
 >> write the indexes of the subdomains's proc to the N and S subdomains **&#9744;**

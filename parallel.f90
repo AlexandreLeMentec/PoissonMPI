@@ -63,7 +63,6 @@ CONTAINS
 
     !Constantes MPI
     LOGICAL, PARAMETER                        :: reorganisation = .FALSE.
-    INTEGER                                   :: i = 1
 
     ! Lecture du nombre de points ntx en x et nty en y
     OPEN(10, FILE='poisson.data', STATUS='OLD')
@@ -79,15 +78,8 @@ CONTAINS
     dims(2) = nb_procs - 2
 
     !Creation de la grille de processus 2D sans periodicite
-    coords(1) = 1
-    coords(2) = 1
-    DO i = 1, rang
-      coords(1) = coords(1)+1
-      IF (coords(1) > dims(1)) THEN
-        coords(1) = 1
-        coords(2) = coords(2)+1
-      END IF
-    END DO
+    periods(1) = .FALSE.
+    periods(2) = .FALSE.
     
     IF (rang == 0) THEN
       WRITE (*,'(A)') '-----------------------------------------'
@@ -102,12 +94,21 @@ CONTAINS
 
 
   SUBROUTINE domaine
+    INTEGER                                   :: i = 1
     !************
     !Calcul des coordonnées globales limites du sous domaine local
     !************
 
     ! Connaitre mes coordonnees dans la topologie
-    
+    coords(1) = 1
+    coords(2) = 1
+    DO i = 1, rang
+      coords(1) = coords(1)+1
+      IF (coords(1) > dims(1)) THEN
+        coords(1) = 1
+        coords(2) = coords(2)+1
+      END IF
+    END DO
 
     !Calcul pour chaque processus de ses indices de debut et de fin suivant x
     sx = 1+(coords(1)-1)*ntx/dims(1)
