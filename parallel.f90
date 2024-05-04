@@ -139,7 +139,7 @@ CONTAINS
     !Recherche des voisins Ouest et Est
     IF (coords(1) - 1 < 0  .AND. .NOT. periods(1)) THEN
       voisin(W) = MPI_PROC_NULL
-    ELSESS
+    ELSE
       call MPI_CART_RANK(comm2d, [coords(1)-1, coords(2)], voisin(W), ierr)
     END IF
 
