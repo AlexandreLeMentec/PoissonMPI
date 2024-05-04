@@ -1,4 +1,4 @@
-# STRUCTURE OF THE CODE AND ADVANCEMENT
+# STRUCTURE OF THE CODE AND ADVANCEMENT OF THE PROJECT
 ___
 <img src="assets\poisson-mpi-high-resolution-logo-transparent.png" alt="MarineGEO circle logo">
 
