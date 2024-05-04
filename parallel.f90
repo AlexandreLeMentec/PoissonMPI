@@ -72,10 +72,8 @@ CONTAINS
 
     !Connaitre le nombre de processus selon x et le nombre de processus
     !selon y en fonction du nombre total de processus
-
-    ! Cette fonction ne marche que dans le cas dims = 2 et nbprocs = 4, sinon tout explose :)
-    dims(1) = nb_procs - 2
-    dims(2) = nb_procs - 2
+    
+    CALL MPI_DIMS_CREATE(nb_procs, ndims, dims, code)
 
     !Creation de la grille de processus 2D sans periodicite
     periods(1) = .FALSE.
@@ -99,16 +97,10 @@ CONTAINS
     !Calcul des coordonnées globales limites du sous domaine local
     !************
 
+    ! Création de la topologie
+    call MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods, .FALSE., comm2d)
     ! Connaitre mes coordonnees dans la topologie
-    coords(1) = 1
-    coords(2) = 1
-    DO i = 1, rang
-      coords(1) = coords(1)+1
-      IF (coords(1) > dims(1)) THEN
-        coords(1) = 1
-        coords(2) = coords(2)+1
-      END IF
-    END DO
+    call MPI_Cart_coords(comm2d, rang, ndims, coords, ierr)
 
     !Calcul pour chaque processus de ses indices de debut et de fin suivant x
     sx = 1+(coords(1)-1)*ntx/dims(1)
@@ -130,9 +122,10 @@ CONTAINS
     !************
 
     !Recherche des voisins Nord et Sud
-
+    call MPI_CART_SHIFT(comm2d, 1, 1, voisin(N), voisin(S), ierr)
 
     !Recherche des voisins Ouest et Est
+    call MPI_CART_SHIFT(comm2d, 2, 1, voisin(W), voisin(E), ierr)
 
     WRITE (*,'(A,i4,A,i4,A,i4,A,i4,A,i4)') "Processus ", rang, &
      " a pour voisin : N", voisin(N), " E", voisin(E), &
