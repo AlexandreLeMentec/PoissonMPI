@@ -50,9 +50,9 @@ CONTAINS
     !Initialisation de MPI
     call MPI_INIT(ierr)
     !Savoir quel processus je suis
-    call MPI_COMM_RANK(MPI_COMM_WORLD, rang)
+    call MPI_COMM_RANK(MPI_COMM_WORLD, rang, ierr)
     !Connaitre le nombre total de processus
-    call MPI_COMM_SIZE(MPI_COMM_WORLD, nb_procs)
+    call MPI_COMM_SIZE(MPI_COMM_WORLD, nb_procs, ierr)
     !print* , nb_procs, rang
   END SUBROUTINE initialisation_mpi
 
@@ -72,9 +72,13 @@ CONTAINS
 
     !Connaitre le nombre de processus selon x et le nombre de processus
     !selon y en fonction du nombre total de processus
+    
+    CALL MPI_DIMS_CREATE(nb_procs, ndims, dims, code)
 
     !Creation de la grille de processus 2D sans periodicite
-
+    periods(1) = .FALSE.
+    periods(2) = .FALSE.
+    
     IF (rang == 0) THEN
       WRITE (*,'(A)') '-----------------------------------------'
       WRITE (*,'(A,i4,A)') 'Execution code poisson avec ', nb_procs, ' processus MPI'
@@ -92,10 +96,13 @@ CONTAINS
     !Calcul des coordonnées globales limites du sous domaine local
     !************
 
+    ! Création de la topologie
+    call MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods, .FALSE., comm2d)
     ! Connaitre mes coordonnees dans la topologie
-    
+    call MPI_Cart_coords(comm2d, rang, ndims, coords, ierr)
 
-    !Calcul pour chaque processus de ses indices de debut et de fin suivant x
+    ! WRITE(*,*) rang, 'de coords', coords
+    !!Calcul pour chaque processus de ses indices de debut et de fin suivant x
     sx = (coords(1)*ntx)/dims(1)+1
     ex = ((coords(1)+1)*ntx)/dims(1)
 
@@ -114,10 +121,33 @@ CONTAINS
     !Calcul des processus voisins pour chaque processus
     !************
 
+
     !Recherche des voisins Nord et Sud
+    IF (coords(2) - 1 < 0  .AND. .NOT. periods(2)) THEN
+      voisin(N) = MPI_PROC_NULL ! Ici on utilise MPI_PROC_NULL pour annuler la communication avec ce processeur sans passer par un IF
+    ELSE
+      call MPI_CART_RANK(comm2d, [coords(1), coords(2)-1], voisin(N), ierr)
+    END IF
+
+    IF (coords(2) + 1 > dims(2)-1  .AND. .NOT. periods(2)) THEN
+      voisin(S) = MPI_PROC_NULL
+    ELSE
+      call MPI_CART_RANK(comm2d, [coords(1), coords(2)+1], voisin(S), ierr)
+    END IF
 
 
     !Recherche des voisins Ouest et Est
+    IF (coords(1) - 1 < 0  .AND. .NOT. periods(1)) THEN
+      voisin(W) = MPI_PROC_NULL
+    ELSE
+      call MPI_CART_RANK(comm2d, [coords(1)-1, coords(2)], voisin(W), ierr)
+    END IF
+
+    IF (coords(1) + 1> dims(1)-1  .AND. .NOT. periods(1)) THEN
+      voisin(E) = MPI_PROC_NULL
+    ELSE
+      call MPI_CART_RANK(comm2d, [coords(1)+1, coords(2)], voisin(E), ierr)
+    END IF
 
     WRITE (*,'(A,i4,A,i4,A,i4,A,i4,A,i4)') "Processus ", rang, &
      " a pour voisin : N", voisin(N), " E", voisin(E), &
