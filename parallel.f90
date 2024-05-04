@@ -102,13 +102,13 @@ CONTAINS
     ! Connaitre mes coordonnees dans la topologie
     call MPI_Cart_coords(comm2d, rang, ndims, coords, ierr)
 
-    !Calcul pour chaque processus de ses indices de debut et de fin suivant x
-    sx = 1+(coords(1)-1)*ntx/dims(1)
-    ex = (coords(1)*ntx)/dims(1)
+    !!Calcul pour chaque processus de ses indices de debut et de fin suivant x
+    sx = (coords(1)*ntx)/dims(1)+1
+    ex = ((coords(1)+1)*ntx)/dims(1)
 
     !Calcul pour chaque processus de ses indices de debut et de fin suivant y
-    sy = 1+(coords(2)-1)*nty/dims(2)
-    ey = (coords(2)*nty)/dims(2)
+    sy = (coords(2)*nty)/dims(2)+1
+    ey = ((coords(2)+1)*nty)/dims(2)
 
     WRITE (*,'(A,i4,A,i4,A,i4,A,i4,A,i4,A)') 'Rang dans la topologie : ', rang, &
          ' Indice des tableaux :', sx, ' a', ex, ' suivant x, ', &
