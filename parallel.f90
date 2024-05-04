@@ -92,7 +92,6 @@ CONTAINS
 
 
   SUBROUTINE domaine
-    INTEGER                                   :: i = 1
     !************
     !Calcul des coordonnées globales limites du sous domaine local
     !************
@@ -102,6 +101,7 @@ CONTAINS
     ! Connaitre mes coordonnees dans la topologie
     call MPI_Cart_coords(comm2d, rang, ndims, coords, ierr)
 
+    ! WRITE(*,*) rang, 'de coords', coords
     !!Calcul pour chaque processus de ses indices de debut et de fin suivant x
     sx = (coords(1)*ntx)/dims(1)+1
     ex = ((coords(1)+1)*ntx)/dims(1)
@@ -121,11 +121,16 @@ CONTAINS
     !Calcul des processus voisins pour chaque processus
     !************
 
+    ! MPI_CART_RANK ne semble pas apprécier les sorties de domaines en non périodique. Il nous faudra donc ajouter une boucle if
+    ! ainsi que des coeffcients par defaut dans le cas de sortie de domaine
+
     !Recherche des voisins Nord et Sud
-    call MPI_CART_SHIFT(comm2d, 1, 1, voisin(N), voisin(S), ierr)
+    call MPI_CART_RANK(comm2d, coords, voisin(N), ierr)
+    call MPI_CART_RANK(comm2d, coords, voisin(S), ierr)
 
     !Recherche des voisins Ouest et Est
-    call MPI_CART_SHIFT(comm2d, 2, 1, voisin(W), voisin(E), ierr)
+    call MPI_CART_RANK(comm2d, coords, voisin(W), ierr)
+    call MPI_CART_RANK(comm2d, coords, voisin(E), ierr)
 
     WRITE (*,'(A,i4,A,i4,A,i4,A,i4,A,i4)') "Processus ", rang, &
      " a pour voisin : N", voisin(N), " E", voisin(E), &
