@@ -121,16 +121,33 @@ CONTAINS
     !Calcul des processus voisins pour chaque processus
     !************
 
-    ! MPI_CART_RANK ne semble pas apprécier les sorties de domaines en non périodique. Il nous faudra donc ajouter une boucle if
-    ! ainsi que des coeffcients par defaut dans le cas de sortie de domaine
 
     !Recherche des voisins Nord et Sud
-    call MPI_CART_RANK(comm2d, coords, voisin(N), ierr)
-    call MPI_CART_RANK(comm2d, coords, voisin(S), ierr)
+    IF (coords(2) - 1 < 0  .AND. .NOT. periods(2)) THEN
+      voisin(N) = MPI_PROC_NULL ! Ici on utilise MPI_PROC_NULL pour annuler la communication avec ce processeur sans passer par un IF
+    ELSE
+      call MPI_CART_RANK(comm2d, [coords(1), coords(2)-1], voisin(N), ierr)
+    END IF
+
+    IF (coords(2) + 1 > dims(2)-1  .AND. .NOT. periods(2)) THEN
+      voisin(S) = MPI_PROC_NULL
+    ELSE
+      call MPI_CART_RANK(comm2d, [coords(1), coords(2)+1], voisin(S), ierr)
+    END IF
+
 
     !Recherche des voisins Ouest et Est
-    call MPI_CART_RANK(comm2d, coords, voisin(W), ierr)
-    call MPI_CART_RANK(comm2d, coords, voisin(E), ierr)
+    IF (coords(1) - 1 < 0  .AND. .NOT. periods(1)) THEN
+      voisin(W) = MPI_PROC_NULL
+    ELSESS
+      call MPI_CART_RANK(comm2d, [coords(1)-1, coords(2)], voisin(W), ierr)
+    END IF
+
+    IF (coords(1) + 1> dims(1)-1  .AND. .NOT. periods(1)) THEN
+      voisin(E) = MPI_PROC_NULL
+    ELSE
+      call MPI_CART_RANK(comm2d, [coords(1)+1, coords(2)], voisin(E), ierr)
+    END IF
 
     WRITE (*,'(A,i4,A,i4,A,i4,A,i4,A,i4)') "Processus ", rang, &
      " a pour voisin : N", voisin(N), " E", voisin(E), &
