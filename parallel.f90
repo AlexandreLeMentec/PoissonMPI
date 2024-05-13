@@ -163,12 +163,13 @@ CONTAINS
 
     !Creation du type type_ligne pour echanger les points
     !au nord et au sud
-
+    call MPI_TYPE_VECTOR(ex-sx,1,1,MPI_REAL,type_ligne) ! not exactly sure about the second 1 here 
+    call MPI_TYPE_COMMIT(type_ligne)
 
     !Creation du type type_colonne pour echanger
     !les points  a l'ouest et a l'est
-
-
+    call MPI_TYPE_CONTIGUOUS(ey-sy,MPI_REAL,type_colonne)
+    call MPI_TYPE_COMMIT(type_colonne)
   END SUBROUTINE type_derive
 
 
