@@ -170,6 +170,9 @@ CONTAINS
     !les points  a l'ouest et a l'est
     call MPI_TYPE_CONTIGUOUS(ey-sy+1,MPI_REAL,type_colonne)
     call MPI_TYPE_COMMIT(type_colonne)
+
+    !type dérivé dp
+    call MPI_TYPE_CREATE_F90_REAL(15,307,typedp) 
   END SUBROUTINE type_derive
 
 
@@ -214,7 +217,7 @@ CONTAINS
 
     !Calcul de l'erreur sur tous les sous-domaines
 
-
+    call MPI_Allreduce(erreur_locale, erreur_globale, 1, typedp, MPI_SUM, comm2d)
 
   END FUNCTION erreur_globale
 
@@ -233,10 +236,20 @@ CONTAINS
     INTEGER, DIMENSION(rang_tableau) :: profil_tab, profil_sous_tab, coord_debut
     INTEGER, DIMENSION(rang_tableau) :: profil_tab_vue, profil_sous_tab_vue, coord_debut_vue
     TYPE(MPI_Datatype)               :: type_sous_tab, type_sous_tab_vue
-
-    ! Changement du gestionnaire d'erreur pour les fichiers
+    ! Error handling
+    CHARACTER(LEN=MPI_MAX_ERROR_STRING) :: erreur
+    INTEGER                             :: longueur_erreur
 
     !Ouverture du fichier "donnees.dat" en écriture
+    CALL MPI_FILE_OPEN(comm2d, 'donnees.dat', MPI_MODE_WRONLY + MPI_MODE_CREATE, MPI_INFO_NULL, descripteur, ierr)
+
+    ! Changement du gestionnaire d'erreur pour les fichiers
+    IF (ierr /= MPI_SUCCESS) THEN
+      CALL MPI_ERROR_STRING(ierr, erreur, longueur_erreur, ierr)
+      WRITE(*,*) 'Erreur MPI : ', erreur
+      CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr)
+    END IF
+
 
     !Creation du type derive type_sous_tab correspondant a la matrice u
     !sans les cellules fantomes
@@ -248,6 +261,7 @@ CONTAINS
     !Ecriture du tableau u par tous les processus avec la vue
 
     ! Fermeture du fichier
+    CALL MPI_FILE_CLOSE(descripteur, ierr)
 
     ! Nettoyage des types MPI
 
@@ -261,6 +275,7 @@ CONTAINS
     call MPI_COMM_FREE(comm2d)
     call MPI_TYPE_FREE(type_ligne)
     call MPI_TYPE_FREE(type_colonne)
+    call MPI_TYPE_FREE(typedp)
     ! Desactivation de MPI
     call MPI_FINALIZE()
 
