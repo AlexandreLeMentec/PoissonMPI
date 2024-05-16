@@ -189,11 +189,11 @@ CONTAINS
     ! en utilisant des méthodes bufferisé. Pour éviter des deadlock, go utiliser un simple sendrecv
 
     !Envoi au voisin N et reception du voisin S
-    call MPI_Sendrecv(u(sx:ex,sy), ex-sx+1, type_ligne, voisin(N), 1, u(sx:ex,ey+1), ex-sx, type_ligne, voisin(S), 1, comm2d, MPI_STATUS_IGNORE) 
+    call MPI_Sendrecv(u(sx:ex,sy), ex-sx+1, type_ligne, voisin(N), 1, u(sx:ex,ey+1), ex-sx+1, type_ligne, voisin(S), 1, comm2d, MPI_STATUS_IGNORE)
     ! bon la fonction a de la gueule mais pour le moment à part avoir de pb de pointeur ça fait pas grand chose. TODO: check le pas dans la subroutine précédente
 
     !Envoi au voisin S et reception du voisin N
-
+    call MPI_Sendrecv(u(sx:ex,ey), ex-sx+1, type_ligne, voisin(S), 2, u(sx:ex,sy-1), ex-sx+1, type_ligne, voisin(N), 2, comm2d, MPI_STATUS_IGNORE)
 
     !Envoi au voisin W et reception du voisin E 
     call MPI_Sendrecv(u(sx,ey:sy), ey-sy+1, type_colonne, voisin(W), 3, u(ex+1,ey:sy), ey-sy+1, type_colonne, voisin(E), 3, comm2d, MPI_STATUS_IGNORE) 
