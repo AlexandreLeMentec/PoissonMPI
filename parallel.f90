@@ -187,13 +187,8 @@ CONTAINS
     INTEGER, PARAMETER                   :: etiquette=100
     TYPE(MPI_Status)                     :: statut
 
-    ! Note de Alex 🐱 : Je pense qe le plus pratique ici serait d'utiliser des communications bloquantes au début. Sauf cas extrêmes, les procs devraient
-    ! recevoir une charge de travail proche et il parait donc assez dérisoire pour le moment de vouloir gagner en fluidité au risque de perdre des donnée 
-    ! en utilisant des méthodes bufferisé. Pour éviter des deadlock, go utiliser un simple sendrecv
-
     !Envoi au voisin N et reception du voisin S
     call MPI_Sendrecv(u(sx:ex,sy), ex-sx+1, type_ligne, voisin(N), 1, u(sx:ex,ey+1), ex-sx+1, type_ligne, voisin(S), 1, comm2d, MPI_STATUS_IGNORE)
-    ! bon la fonction a de la gueule mais pour le moment à part avoir de pb de pointeur ça fait pas grand chose. TODO: check le pas dans la subroutine précédente
 
     !Envoi au voisin S et reception du voisin N
     call MPI_Sendrecv(u(sx:ex,ey), ex-sx+1, type_ligne, voisin(S), 2, u(sx:ex,sy-1), ex-sx+1, type_ligne, voisin(N), 2, comm2d, MPI_STATUS_IGNORE)
@@ -213,11 +208,12 @@ CONTAINS
 
     REAL(kind=dp)              :: erreur_globale, erreur_locale
 
+
     erreur_locale = MAXVAL(ABS(u(sx:ex, sy:ey) - u_nouveau(sx:ex, sy:ey)))
 
     !Calcul de l'erreur sur tous les sous-domaines
 
-    call MPI_Allreduce(erreur_locale, erreur_globale, 1, typedp, MPI_SUM, comm2d)
+    call MPI_Allreduce(erreur_locale, erreur_globale, 8, typedp, MPI_SUM, comm2d)
 
   END FUNCTION erreur_globale
 
@@ -275,7 +271,6 @@ CONTAINS
     call MPI_COMM_FREE(comm2d)
     call MPI_TYPE_FREE(type_ligne)
     call MPI_TYPE_FREE(type_colonne)
-    call MPI_TYPE_FREE(typedp)
     ! Desactivation de MPI
     call MPI_FINALIZE()
 
