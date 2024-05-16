@@ -138,14 +138,15 @@ CONTAINS
     !************
     !Creation des types derives type_ligne et type_colonne
     !************
-    
     !Creation du type type_ligne pour echanger les points
     !au nord et au sud
-
+    call MPI_TYPE_VECTOR(ex-sx+1,1,ey-sy+1,MPI_REAL,type_ligne) 
+    call MPI_TYPE_COMMIT(type_ligne)
 
     !Creation du type type_colonne pour echanger
     !les points  a l'ouest et a l'est
-
+    call MPI_TYPE_CONTIGUOUS(ey-sy+1,MPI_REAL,type_colonne)
+    call MPI_TYPE_COMMIT(type_colonne)
 
   END SUBROUTINE type_derive
 
@@ -162,15 +163,24 @@ CONTAINS
     TYPE(MPI_Status)                     :: statut
 
     !Envoi au voisin N et reception du voisin S
-
+    call  MPI_SENDRECV(u(sx:ex,sy ),ex-sx+1,type_ligne, voisin(N), 1, &
+                      u(sx:ex,ey+1),ex-sx+1,type_ligne, voisin(S), 1, &
+                      comm2d, MPI_STATUS_IGNORE)
 
     !Envoi au voisin S et reception du voisin N
-
-
+    call MPI_Sendrecv(u(sx:ex,ey), ex-sx+1, type_ligne, voisin(S), 2, &
+                    u(sx:ex,sy-1), ex-sx+1, type_ligne, voisin(N), 2, &
+                     comm2d, MPI_STATUS_IGNORE)
+              
     !Envoi au voisin W et reception du voisin E 
-
+    call MPI_Sendrecv(u(sx,ey:sy), ey-sy+1, type_colonne, voisin(W), 3, &
+                     u(ex+1,ey:sy), ey-sy+1, type_colonne, voisin(E), 3, & 
+                     comm2d, MPI_STATUS_IGNORE) 
 
     !Envoi au voisin E et reception du voisin W 
+    call MPI_Sendrecv(u(ex,ey:sy), ey-sy+1, type_colonne, voisin(E), 4, &
+                     u(sx-1,ey:sy), ey-sy+1, type_colonne, voisin(W), 4, &
+                      comm2d, MPI_STATUS_IGNORE) 
 
 
   END SUBROUTINE communication
@@ -231,9 +241,12 @@ CONTAINS
     !Desactivation de l'environnement MPI
     !************
 
-    ! Nettoyages des types et comm MPI
-
+    ! Nettoyages des types et comm MPI  
+    call MPI_COMM_FREE(comm2d)
+    call MPI_TYPE_FREE(type_ligne)
+    call MPI_TYPE_FREE(type_colonne)
     ! Desactivation de MPI
+    call MPI_FINALIZE()
 
 
   END SUBROUTINE finalisation_mpi
