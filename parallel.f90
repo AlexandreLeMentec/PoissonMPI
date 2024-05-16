@@ -168,7 +168,7 @@ CONTAINS
 
     !Creation du type type_colonne pour echanger
     !les points  a l'ouest et a l'est
-    call MPI_TYPE_CONTIGUOUS(ey-sy,MPI_REAL,type_colonne)
+    call MPI_TYPE_CONTIGUOUS(ey-sy+1,MPI_REAL,type_colonne)
     call MPI_TYPE_COMMIT(type_colonne)
   END SUBROUTINE type_derive
 
