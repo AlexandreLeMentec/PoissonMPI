@@ -257,11 +257,12 @@ CONTAINS
     !************
     !Desactivation de l'environnement MPI
     !************
-    call MPI_FINALIZE(ierr)
     ! Nettoyages des types et comm MPI
-
+    call MPI_COMM_FREE(comm2d)
+    call MPI_TYPE_FREE(type_ligne)
+    call MPI_TYPE_FREE(type_colonne)
     ! Desactivation de MPI
-
+    call MPI_FINALIZE()
 
   END SUBROUTINE finalisation_mpi
 
