@@ -34,18 +34,18 @@ ___
 >> write the indexes of the subdomains's proc to the E and W subdomains **&#9745;**
 
 > ***type_derive*** <span style="color:#85d0df">(subroutine)</span>
->> Create a derived type variable for the north and south horizontal vectors **&#9745;** (first attempt at creating the type, don't know if it actually works)
+>> Create a derived type variable for the north and south horizontal vectors **&#9745;**
 >
 >> Create a derived type variable for the east and west vertical vectors **&#9745;**
 
 > ***communication*** <span style="color:#85d0df">(subroutine)</span>
->> send to North and receive from South **&#9744;**
+>> send to North and receive from South **&#9745;**
 >
->> send to South and receive from Nouth **&#9744;**
+>> send to South and receive from Nouth **&#9745;**
 >
->> send to West and receive from East **&#9744;**
+>> send to West and receive from East **&#9745;**
 >
->> send to East ans receive from West **&#9744;**
+>> send to East ans receive from West **&#9745;**
 
 > ***erreur globale*** <span style="color:#dfad85">(function)</span>
 >> Compute local error **&#9745;**
