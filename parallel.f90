@@ -170,6 +170,9 @@ CONTAINS
     !les points  a l'ouest et a l'est
     call MPI_TYPE_CONTIGUOUS(ey-sy+1,MPI_REAL,type_colonne)
     call MPI_TYPE_COMMIT(type_colonne)
+
+    !type dérivé dp
+    call MPI_TYPE_CREATE_F90_REAL(15,307,typedp) 
   END SUBROUTINE type_derive
 
 
@@ -214,7 +217,7 @@ CONTAINS
 
     !Calcul de l'erreur sur tous les sous-domaines
 
-
+    call MPI_Allreduce(erreur_locale, erreur_globale, 1, typedp, MPI_SUM, comm2d)
 
   END FUNCTION erreur_globale
 
@@ -261,6 +264,7 @@ CONTAINS
     call MPI_COMM_FREE(comm2d)
     call MPI_TYPE_FREE(type_ligne)
     call MPI_TYPE_FREE(type_colonne)
+    call MPI_TYPE_FREE(typedp)
     ! Desactivation de MPI
     call MPI_FINALIZE()
 
