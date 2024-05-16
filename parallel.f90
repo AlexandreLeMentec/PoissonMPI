@@ -163,12 +163,13 @@ CONTAINS
 
     !Creation du type type_ligne pour echanger les points
     !au nord et au sud
-
+    call MPI_TYPE_VECTOR(ex-sx+1,1,ey-sy+1,MPI_REAL,type_ligne) ! not exactly sure about the second 1 here 
+    call MPI_TYPE_COMMIT(type_ligne)
 
     !Creation du type type_colonne pour echanger
     !les points  a l'ouest et a l'est
-
-
+    call MPI_TYPE_CONTIGUOUS(ey-sy,MPI_REAL,type_colonne)
+    call MPI_TYPE_COMMIT(type_colonne)
   END SUBROUTINE type_derive
 
 
@@ -183,18 +184,22 @@ CONTAINS
     INTEGER, PARAMETER                   :: etiquette=100
     TYPE(MPI_Status)                     :: statut
 
-    !Envoi au voisin N et reception du voisin S
+    ! Note de Alex 🐱 : Je pense qe le plus pratique ici serait d'utiliser des communications bloquantes au début. Sauf cas extrêmes, les procs devraient
+    ! recevoir une charge de travail proche et il parait donc assez dérisoire pour le moment de vouloir gagner en fluidité au risque de perdre des donnée 
+    ! en utilisant des méthodes bufferisé. Pour éviter des deadlock, go utiliser un simple sendrecv
 
+    !Envoi au voisin N et reception du voisin S
+    call MPI_Sendrecv(u(sx:ex,sy), ex-sx+1, type_ligne, voisin(N), 1, u(sx:ex,ey+1), ex-sx, type_ligne, voisin(S), 1, comm2d, MPI_STATUS_IGNORE) 
+    ! bon la fonction a de la gueule mais pour le moment à part avoir de pb de pointeur ça fait pas grand chose. TODO: check le pas dans la subroutine précédente
 
     !Envoi au voisin S et reception du voisin N
 
 
     !Envoi au voisin W et reception du voisin E 
-
+    call MPI_Sendrecv(u(sx,ey:sy), ey-sy+1, type_colonne, voisin(W), 3, u(ex+1,ey:sy), ey-sy+1, type_colonne, voisin(E), 3, comm2d, MPI_STATUS_IGNORE) 
 
     !Envoi au voisin E et reception du voisin W 
-
-
+    call MPI_Sendrecv(u(ex,ey:sy), ey-sy+1, type_colonne, voisin(E), 4, u(sx-1,ey:sy), ey-sy+1, type_colonne, voisin(W), 4, comm2d, MPI_STATUS_IGNORE) 
   END SUBROUTINE communication
 
   FUNCTION erreur_globale(u, u_nouveau)
