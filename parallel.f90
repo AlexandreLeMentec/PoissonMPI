@@ -163,13 +163,13 @@ CONTAINS
     call MPI_TYPE_CREATE_F90_REAL(15,307,typedp) 
     !Creation du type type_ligne pour echanger les points
     !au nord et au sud
-    CALL MPI_TYPE_VECTOR(ey-sy+1, 1, ex-sx+3, typedp, type_ligne, code)
-    CALL MPI_TYPE_COMMIT(type_ligne, code)
+    CALL MPI_TYPE_VECTOR(ey-sy+1, 1, ex-sx+3, typedp, type_ligne, ierr)
+    CALL MPI_TYPE_COMMIT(type_ligne, ierr)
 
     !Creation du type type_colonne pour echanger
     !les points  a l'ouest et a l'est
-    CALL MPI_TYPE_CONTIGUOUS(ex-sx+1, typedp, type_colonne, code)
-    CALL MPI_TYPE_COMMIT(type_colonne, code)
+    CALL MPI_TYPE_CONTIGUOUS(ex-sx+1, typedp, type_colonne, ierr)
+    CALL MPI_TYPE_COMMIT(type_colonne, ierr)
   END SUBROUTINE type_derive
 
 
@@ -182,7 +182,7 @@ CONTAINS
     INTEGER                                                    :: test
 
     !Constantes MPI
-    INTEGER, PARAMETER                   :: etiquette=100
+    INTEGER, PARAMETER                   :: etiquette=125
     TYPE(MPI_Status)                     :: statut
 
     !Envoi au voisin N et reception du voisin 
