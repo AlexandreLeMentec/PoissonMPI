@@ -160,7 +160,8 @@ CONTAINS
     !************
 
     !type dérivé dp
-    call MPI_TYPE_CREATE_F90_REAL(15,307,typedp) 
+    CALL MPI_TYPE_CREATE_F90_REAL(15,307,typedp) 
+    CALL MPI_TYPE_COMMIT(typedp, ierr)
     !Creation du type type_ligne pour echanger les points
     !au nord et au sud
     CALL MPI_TYPE_VECTOR(ey-sy+1, 1, ex-sx+3, typedp, type_ligne, ierr)
@@ -274,6 +275,7 @@ CONTAINS
     call MPI_COMM_FREE(comm2d)
     call MPI_TYPE_FREE(type_ligne)
     call MPI_TYPE_FREE(type_colonne)
+    !call MPI_TYPE_FREE(typedp)
     ! Desactivation de MPI
     call MPI_FINALIZE()
 
