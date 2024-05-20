@@ -121,7 +121,6 @@ CONTAINS
     !Calcul des processus voisins pour chaque processus
     !************
 
-
     !Recherche des voisins Nord et Sud
     IF (coords(2) - 1 < 0  .AND. .NOT. periods(2)) THEN
       voisin(N) = MPI_PROC_NULL ! Ici on utilise MPI_PROC_NULL pour annuler la communication avec ce processeur sans passer par un IF
@@ -134,7 +133,6 @@ CONTAINS
     ELSE
       call MPI_CART_RANK(comm2d, [coords(1), coords(2)+1], voisin(S), ierr)
     END IF
-
 
     !Recherche des voisins Ouest et Est
     IF (coords(1) - 1 < 0  .AND. .NOT. periods(1)) THEN
@@ -161,18 +159,17 @@ CONTAINS
     !Creation des types derives type_ligne et type_colonne
     !************
 
+    !type dérivé dp
+    call MPI_TYPE_CREATE_F90_REAL(15,307,typedp) 
     !Creation du type type_ligne pour echanger les points
     !au nord et au sud
-    call MPI_TYPE_VECTOR(ex-sx+1,1,ey-sy+1,MPI_REAL,type_ligne) ! not exactly sure about the second 1 here 
-    call MPI_TYPE_COMMIT(type_ligne)
+    CALL MPI_TYPE_VECTOR(ey-sy+1, 1, ex-sx+3, typedp, type_ligne, code)
+    CALL MPI_TYPE_COMMIT(type_ligne, code)
 
     !Creation du type type_colonne pour echanger
     !les points  a l'ouest et a l'est
-    call MPI_TYPE_CONTIGUOUS(ey-sy+1,MPI_REAL,type_colonne)
-    call MPI_TYPE_COMMIT(type_colonne)
-
-    !type dérivé dp
-    call MPI_TYPE_CREATE_F90_REAL(15,307,typedp) 
+    CALL MPI_TYPE_CONTIGUOUS(ex-sx+1, typedp, type_colonne, code)
+    CALL MPI_TYPE_COMMIT(type_colonne, code)
   END SUBROUTINE type_derive
 
 
@@ -182,22 +179,28 @@ CONTAINS
     !************
 
     REAL(kind=dp), ALLOCATABLE, DIMENSION(:, :), INTENT(inout) :: u
+    INTEGER                                                    :: test
 
     !Constantes MPI
     INTEGER, PARAMETER                   :: etiquette=100
     TYPE(MPI_Status)                     :: statut
 
-    !Envoi au voisin N et reception du voisin S
-    call MPI_Sendrecv(u(sx:ex,sy), ex-sx+1, type_ligne, voisin(N), 1, u(sx:ex,ey+1), ex-sx+1, type_ligne, voisin(S), 1, comm2d, MPI_STATUS_IGNORE)
+    !Envoi au voisin N et reception du voisin 
+    CALL MPI_SENDRECV(u(sx, sy), 1, type_ligne,   voisin(N), &
+         etiquette, u(ex+1, sy), 1, type_ligne,   voisin(S), etiquette, comm2d, statut, code)
 
     !Envoi au voisin S et reception du voisin N
-    call MPI_Sendrecv(u(sx:ex,ey), ex-sx+1, type_ligne, voisin(S), 2, u(sx:ex,sy-1), ex-sx+1, type_ligne, voisin(N), 2, comm2d, MPI_STATUS_IGNORE)
+    CALL MPI_SENDRECV(u(ex, sy), 1, type_ligne,   voisin(S), &
+         etiquette, u(sx-1, sy), 1, type_ligne,   voisin(N), etiquette, comm2d, statut, code)
 
-    !Envoi au voisin W et reception du voisin E 
-    call MPI_Sendrecv(u(sx,ey:sy), ey-sy+1, type_colonne, voisin(W), 3, u(ex+1,ey:sy), ey-sy+1, type_colonne, voisin(E), 3, comm2d, MPI_STATUS_IGNORE) 
+    !Envoi au voisin W et reception du voisin E
+    CALL MPI_SENDRECV(u(sx, sy), 1, type_colonne, voisin(W), &
+         etiquette, u(sx, ey+1), 1, type_colonne, voisin(E), etiquette, comm2d, statut, code)
 
-    !Envoi au voisin E et reception du voisin W 
-    call MPI_Sendrecv(u(ex,ey:sy), ey-sy+1, type_colonne, voisin(E), 4, u(sx-1,ey:sy), ey-sy+1, type_colonne, voisin(W), 4, comm2d, MPI_STATUS_IGNORE) 
+    !Envoi au voisin E et  reception du voisin W
+    CALL MPI_SENDRECV(u(sx, ey), 1, type_colonne, voisin(E), &
+         etiquette, u(sx, sy-1), 1, type_colonne, voisin(W), etiquette, comm2d, statut, code)
+    
   END SUBROUTINE communication
 
   FUNCTION erreur_globale(u, u_nouveau)
