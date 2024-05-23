@@ -243,27 +243,63 @@ CONTAINS
     !Ouverture du fichier "donnees.dat" en écriture
     CALL MPI_FILE_OPEN(comm2d, 'donnees.dat', MPI_MODE_WRONLY + MPI_MODE_CREATE, MPI_INFO_NULL, descripteur, ierr)
 
-    ! Changement du gestionnaire d'erreur pour les fichiers
-    IF (ierr /= MPI_SUCCESS) THEN
-      CALL MPI_ERROR_STRING(ierr, erreur, longueur_erreur, ierr)
-      WRITE(*,*) 'Erreur MPI : ', erreur
-      CALL MPI_ABORT(MPI_COMM_WORLD, 1, ierr)
-    END IF
-
+    !Ouverture du fichier "donnees.dat" en écriture
+    CALL MPI_FILE_OPEN(comm2d, "donnees.dat", &
+         MPI_MODE_WRONLY + MPI_MODE_CREATE, &
+         MPI_INFO_NULL, descripteur)
 
     !Creation du type derive type_sous_tab correspondant a la matrice u
     !sans les cellules fantomes
 
+    !Profil du tableau u
+    profil_tab(:) = SHAPE(u)
+
+    !Profil du sous tableau
+    profil_sous_tab(:) = SHAPE(u(sx:ex, sy:ey))
+
+    !Coordonnees de depart du sous tableau
+    coord_debut(:) = (/ 1, 1 /)
+
+    !Creation du type derive type_sous_tab
+    CALL MPI_TYPE_CREATE_SUBARRAY(rang_tableau, profil_tab, profil_sous_tab, &
+     coord_debut, MPI_ORDER_FORTRAN, typedp, type_sous_tab)
+
+    !Validation du type_derive type_sous_tab
+    CALL MPI_TYPE_COMMIT(type_sous_tab)
+
     !Creation du type type_sous_tab_vue pour la vue sur le fichier
 
+    !Profil du tableau global
+    profil_tab_vue(:) = (/ ntx, nty /)
+
+    !Profil du sous tableau
+    profil_sous_tab_vue(:) = SHAPE(u(sx:ex, sy:ey))
+
+    !Coordonnees de depart du sous tableau
+    coord_debut_vue(:) =  (/ sx-1, sy-1 /)
+
+    !Creation du type_derive type_sous_tab_vue
+    CALL MPI_TYPE_CREATE_SUBARRAY(rang_tableau, profil_tab_vue, &
+     profil_sous_tab_vue, coord_debut_vue, &
+     MPI_ORDER_FORTRAN, typedp, type_sous_tab_vue)
+
+    !Validation du type_derive type_sous_tab_vue
+    CALL MPI_TYPE_COMMIT(type_sous_tab_vue)
+
     !Définition de la vue sur le fichier a partir du debut
+    deplacement_initial = 0
+    CALL MPI_FILE_SET_VIEW(descripteur, deplacement_initial, typedp, &
+     type_sous_tab_vue, "native", MPI_INFO_NULL)
 
     !Ecriture du tableau u par tous les processus avec la vue
+    CALL MPI_FILE_WRITE_ALL(descripteur, u, 1, type_sous_tab, statut)
 
     ! Fermeture du fichier
-    CALL MPI_FILE_CLOSE(descripteur, ierr)
+    CALL MPI_FILE_CLOSE(descripteur)
 
     ! Nettoyage des types MPI
+    CALL MPI_TYPE_FREE(type_sous_tab)
+    CALL MPI_TYPE_FREE(type_sous_tab_vue)
 
   END SUBROUTINE ecrire_mpi
 
