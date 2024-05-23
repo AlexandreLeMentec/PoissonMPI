@@ -610,6 +610,199 @@ SUBROUTINE write_result_incompressible(ini,u,v,w,phi,tp,pres,vort,vap,div,kappa,
 
 END SUBROUTINE write_result_incompressible
 
+SUBROUTINE write_result_poisson(ini,u)
+
+   USE type_params
+ 
+   implicit none
+ 
+   real*8, dimension(sx-3:ex+3,sy-3:ey+3,sz-3:ez+3,2), intent(in) :: u
+ 
+   logical, intent(in) :: ini
+ 
+   real*8, dimension(:,:,:,:), allocatable :: uc,vc,wc
+   real*8, dimension(:,:,:  ), allocatable :: tpp
+ 
+   integer :: i,j,k,ph,coord_x,coord_y,coord_z
+   character*30 :: nom_fichier
+   character*4  :: num
+ 
+   if ( ini ) then
+ 
+      nom_fichier = 'initial.plt'
+ 
+      if ( proc == 0 ) then
+ 
+         if ( fich(1) ) then
+ 
+            open(unit=10,file=nom_fichier,status='replace')
+            write(10,'(A16 )') 'TITLE="RESULTAT"'
+            if ( niv_ecriture == 1 ) then
+               write(10,'(A54 )') 'VARIABLES= "x" "y" "z" "u"'
+            else if ( niv_ecriture == 2 ) then
+               write(10,'(A65 )') 'VARIABLES= "x" "y" "z" "u"'
+            else if ( niv_ecriture == 3 ) then
+               write(10,'(A144)') 'VARIABLES= "x" "y" "z" "u"'
+            end if
+            close(10)
+ 
+            fich(1) = .false.
+ 
+         end if
+ 
+         open(unit=10,file=nom_fichier,status='old',position='append')
+         write(10,'(A10,I5,A5,I5,A5,I5,A20,E11.4,A1)') ' ZONE I = ',nx,' J = ',ny,' K = ',nz,' F = POINT T="temps ',t,'"'
+         close(10)
+ 
+      end if
+ 
+   else if ( format_result == 1 ) then
+ 
+      nom_fichier = 'result_asc.plt'
+ 
+      if ( proc == 0 ) then
+ 
+         if ( fich(2) ) then
+ 
+            open(unit=10,file=nom_fichier,status='replace')
+            write(10,'(A16 )') 'TITLE="RESULTAT"'
+            if ( niv_ecriture == 1 ) then
+               write(10,'(A54 )') 'VARIABLES= "x" "y" "z" "u"'
+            else if ( niv_ecriture == 2 ) then
+               write(10,'(A65 )') 'VARIABLES= "x" "y" "z" "u"'
+            else if ( niv_ecriture == 3 ) then
+               write(10,'(A144)') 'VARIABLES= "x" "y" "z" "u"'
+            end if
+            close(10)
+ 
+            fich(2) = .false.
+ 
+         end if
+ 
+         open(unit=10,file=nom_fichier,status='old',position='append')
+         write(10,'(A10,I4,A5,I4,A5,I4,A20,E11.4,A1)') ' ZONE I = ',nx,' J = ',ny,' K = ',nz,' F = POINT T="temps ',t,'"'
+         close(10)
+ 
+      end if
+ 
+   end if
+ 
+   if ( ini .or. format_result == 1 ) then
+ 
+      allocate(uc (sx:ex,sy:ey,sz:ez,3))
+      allocate(vc (sx:ex,sy:ey,sz:ez,3))
+      allocate(wc (sx:ex,sy:ey,sz:ez,3))
+      allocate(tpp(sx:ex,sy:ey,sz:ez  ))
+ 
+      do ph=1,1+EBUL
+         do k=sz,ez
+            do j=sy,ey
+               do i=sx,ex
+ 
+                  uc(i,j,k,ph) = demi * ( u(i,j,k,ph) + u(i-1,j  ,k  ,ph) )
+                  vc(i,j,k,ph) = demi * ( v(i,j,k,ph) + v(i  ,j-1,k  ,ph) )
+                  wc(i,j,k,ph) = demi * ( w(i,j,k,ph) + w(i  ,j  ,k-1,ph) )
+ 
+               end do
+            end do
+         end do
+      end do
+ 
+      do k=sz,ez
+         do j=sy,ey
+            do i=sx,ex
+ 
+               if ( phi(i,j,k) < zero .or. EBUL == 0 ) then
+                  uc(i,j,k,3) = uc(i,j,k,1)
+                  vc(i,j,k,3) = vc(i,j,k,1)
+                  wc(i,j,k,3) = wc(i,j,k,1)
+                  tpp(i,j,k)  = tp(i,j,k,1)
+               else
+                  uc(i,j,k,3) = uc(i,j,k,2)
+                  vc(i,j,k,3) = vc(i,j,k,2)
+                  wc(i,j,k,3) = wc(i,j,k,2)
+                  tpp(i,j,k)  = tp(i,j,k,2)
+               end if
+ 
+            end do
+         end do
+      end do
+ 
+      do coord_z=0,np_z-1
+         do k=sz,ez
+            do coord_y=0,np_y-1
+               do j=sy,ey
+                  do coord_x=0,np_x-1
+ 
+                     if ( coords(1) == coord_x .and. coords(2) == coord_y .and. coords(3) == coord_z ) then
+ 
+                        open(unit=10,file=nom_fichier,status='old',position='append')
+ 
+                        do i=sx,ex
+ 
+                           if ( niv_ecriture == 1 ) then
+                              write(10,'( 9E14.6)')     xi(i),yj(j),zk(k),uc(i,j,k,3),vc(i,j,k,3),wc(i,j,k,3),&
+                           else if ( niv_ecriture == 2 ) then
+                              write(10,'(11E14.6)')    xi(i),yj(j),zk(k),uc(i,j,k,3),vc(i,j,k,3),wc(i,j,k,3),&
+                           else if ( niv_ecriture == 3 ) then
+                              write(10,'(24E14.6)')    xi(i),yj(j),zk(k),uc(i,j,k,3),vc(i,j,k,3),wc(i,j,k,3),&
+                                   tp(i,j,k,1),tp(i,j,k,2),&
+                                   uc(i,j,k,1),vc(i,j,k,1),wc(i,j,k,1),&
+                                   uc(i,j,k,2),vc(i,j,k,2),wc(i,j,k,2),&
+                           end if
+ 
+                        end do
+ 
+                        close(10)
+ 
+                     end if
+ 
+                     call MPI_barrier(comm3d,code)
+ 
+                  end do
+               end do
+            end do
+         end do
+      end do
+ 
+      deallocate(uc) ; deallocate(vc) ; deallocate(wc) ; deallocate(tpp)
+ 
+   else if ( format_result == 2 ) then
+ 
+      write(num,'(i4.4)') proc+1
+      nom_fichier = trim('result_proc')//num//'.bin'
+ 
+      if ( fich(2) ) then
+ 
+         open(unit=10,file=nom_fichier,status='replace',form='unformatted')!,convert='BIG_ENDIAN')
+         fich(2) = .false.
+ 
+         write(10) np_x,np_y,np_z
+         write(10) coords(1),coords(2),coords(3)
+ 
+      else
+ 
+         open(unit=10,file=nom_fichier,status='old',form='unformatted',position='append')!,convert='BIG_ENDIAN')
+ 
+      end if
+ 
+      write(10) t
+      write(10) u
+      write(10) v
+      write(10) w
+      if ( EBUL == 1 ) write(10) tp
+ 
+      close(10)
+ 
+   end if
+ 
+   call MPI_barrier(comm3d,code)
+ 
+ 10 FORMAT (A10,I4,A5,I4,A5,I4,A20,E11.4,A1)
+ 
+   return
+ 
+END SUBROUTINE write_result_poisson
 
 
 

@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+ <VTKFile type="Collection" version="0.1" format="ascii">
+ <Collection>
+ <DataSet timestep="   0.0000000000000000      " group="" part="0" file="sol_000000000.vts"/>

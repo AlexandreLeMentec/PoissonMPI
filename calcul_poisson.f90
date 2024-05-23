@@ -54,13 +54,16 @@ CONTAINS
     coef(3) = 1./(hy*hy)
 
     !Initialisation du second membre et calcul de la solution exacte
-    DO i=sx, ex
-      DO j=sy, ey
+    DO j=sy, ey
+      DO i=sx, ex
         x = i*hx
         y = j*hy
         f(i, j) = 2*(x*x-x+y*y-y)
         u_exact(i, j) = x*y*(x-1)*(y-1)
       END DO
+      write(*,*) 'Coucou'
+      write(*,'(16(F10.4))') (u_exact(sx:ex,j))
+
     END DO
 
   END SUBROUTINE initialisation

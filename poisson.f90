@@ -45,8 +45,11 @@ PROGRAM poisson
   REAL(kind=dp), ALLOCATABLE, DIMENSION(:, :) :: u, u_nouveau
   !Solution exacte
   REAL(kind=dp), ALLOCATABLE, DIMENSION(:, :) :: u_exact
+
+  ! Maillage pour affichage
+  REAL(kind=dp), ALLOCATABLE, DIMENSION(:,:) :: x, y
   !Nombre iterations en temps
-  INTEGER                                  :: it
+  INTEGER                                  :: it,i,j
   !Convergence
   REAL(kind=dp)                             :: diffnorm
   !Mesure du temps
@@ -116,6 +119,13 @@ PROGRAM poisson
     !Comparaison de la solution calculee et de la solution exacte
     !sur le processus 0
     CALL sortie_resultats(u, u_exact)
+    do j = 1,nty
+      write(*,'(8(F10.4))') (u(1:8,j))
+    end do
+    allocate(x(0:ntx+1, 0:nty+1), y(0:ntx+1, 0:nty+1))
+    call mesh(x,y,ntx,nty)
+    call VTSWriter(0.0,0,ntx,nty,x,y,U_exact,'ini')
+    deallocate(x,y)
   END IF
  
   !Ecriture des resultats u(sx:ex, sy:ey) 
