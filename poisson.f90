@@ -42,14 +42,14 @@ PROGRAM poisson
   IMPLICIT NONE
 
   !Solution u et u_nouveau a l'iteration n et n+1
-  REAL(kind=dp), ALLOCATABLE, DIMENSION(:, :) :: u, u_nouveau
+  REAL(kind=dp), ALLOCATABLE, DIMENSION(:, :) :: u, u_nouveau, u_plot
   !Solution exacte
   REAL(kind=dp), ALLOCATABLE, DIMENSION(:, :) :: u_exact
 
   ! Maillage pour affichage
   REAL(kind=dp), ALLOCATABLE, DIMENSION(:,:) :: x, y
   !Nombre iterations en temps
-  INTEGER                                  :: it,i,j
+  INTEGER                                  :: it
   !Convergence
   REAL(kind=dp)                             :: diffnorm
   !Mesure du temps
@@ -60,6 +60,7 @@ PROGRAM poisson
   !****************************************************************************
   !Initialisation de MPI
   CALL initialisation_mpi
+  write(*,*) 'Initialisation MPI', rang
 
   !Creation de la topologie cartesienne 2D
   CALL creation_topologie
@@ -119,18 +120,30 @@ PROGRAM poisson
     !Comparaison de la solution calculee et de la solution exacte
     !sur le processus 0
     CALL sortie_resultats(u, u_exact)
-    do j = 1,nty
-      write(*,'(8(F10.4))') (u(1:8,j))
-    end do
+    ! Taille de u et u_excat
+    ! do j = 1,nty
+    !   write(*,'(8(F10.4))') (u(1:8,j))
+    ! end do
+
+  END IF
+
+  ! Gather for plot
+  allocate (u_plot(ntx,nty))
+
+  if (rang == 0) then
     allocate(x(0:ntx+1, 0:nty+1), y(0:ntx+1, 0:nty+1))
     call mesh(x,y,ntx,nty)
-    call VTSWriter(0.0,0,ntx,nty,x,y,U_exact,'ini')
+    call VTSWriter(0.0,0,ntx,nty,x,y,u,'ini')
     deallocate(x,y)
-  END IF
- 
+  end if  
+  
   !Ecriture des resultats u(sx:ex, sy:ey) 
   !pour chaque processus
   CALL ecrire_mpi(u)
+  call MPI_Barrier(comm2d, ierr)
+
+  call vitesse_affichage(u_plot, u)
+  deallocate(u_plot)
 
   !Desactivation de MPI
   CALL finalisation_mpi

@@ -61,7 +61,6 @@ CONTAINS
         f(i, j) = 2*(x*x-x+y*y-y)
         u_exact(i, j) = x*y*(x-1)*(y-1)
       END DO
-      write(*,*) 'Coucou'
       write(*,'(16(F10.4))') (u_exact(sx:ex,j))
 
     END DO

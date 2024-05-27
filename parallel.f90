@@ -36,7 +36,7 @@ MODULE parallel
   INTEGER, PARAMETER                        :: N=1, E=2, S=3, W=4
   INTEGER, DIMENSION(NB_VOISINS)            :: voisin
   ! Types derives
-  TYPE(MPI_Datatype)                        :: typedp,type_ligne, type_colonne
+  TYPE(MPI_Datatype)                        :: typedp,type_ligne, type_colonne, type_tableau
   !Constantes MPI
   INTEGER                                   :: code
 
@@ -171,6 +171,12 @@ CONTAINS
     !les points  a l'ouest et a l'est
     CALL MPI_TYPE_CONTIGUOUS(ex-sx+1, typedp, type_colonne, ierr)
     CALL MPI_TYPE_COMMIT(type_colonne, ierr)
+
+    ! Creation d'un type_tableau pour échanger
+    ! le champ de vitesse
+    ! write(*,*) 'type_tableau', rang, "limites" , sx, ex, sy, ey
+    ! CALL MPI_TYPE_VECTOR(ey-sy+1, ex-sx+1, (ey-sy+1), typedp, type_tableau, ierr)
+    ! CALL MPI_TYPE_COMMIT(type_tableau, ierr)
   END SUBROUTINE type_derive
 
 
@@ -180,7 +186,6 @@ CONTAINS
     !************
 
     REAL(kind=dp), ALLOCATABLE, DIMENSION(:, :), INTENT(inout) :: u
-    INTEGER                                                    :: test
 
     !Constantes MPI
     INTEGER, PARAMETER                   :: etiquette=125
@@ -203,6 +208,33 @@ CONTAINS
          etiquette, u(sx, sy-1), 1, type_colonne, voisin(W), etiquette, comm2d, statut, code)
     
   END SUBROUTINE communication
+
+  SUBROUTINE vitesse_affichage(u_affichage, u)
+    
+    !********************
+    ! Calcul de la vitesse d'affichage
+    !********************
+    REAL(kind=dp), ALLOCATABLE, DIMENSION(:, :), INTENT(inout) :: u_affichage, u
+    integer :: sen_count, rec_count,j
+    write(*,*) 'vitesse_affichage', rang, "waiting"
+    call MPI_BARRIER(comm2d, ierr)
+    sen_count = (ex-sx+1)*(ey-sy+1)
+    rec_count =  size(u_affichage(sx:ex,sy:ey))
+    write(*,*) 'taille sen_count', sen_count, 'rec_count', rec_count
+    ! call MPI_GATHER(u(sx:ex, sy:ey), (ex-sx+1)*(ey-sy+1), type_tableau, &
+    !                 u_affichage(sx:ex,sy:ey), (ex-sx+1)*(ey-sy+1), &
+    !                 type_tableau, 0, comm2d, ierr)
+    
+    ! Gather ligne par ligne
+    do j = sy, ey
+      call MPI_GATHER(u(sx:ex, j), ex-sx+1, type_ligne, &
+                      u_affichage(sx:ex,j), ex-sx+1, type_ligne, 0, comm2d, ierr)
+    end do
+    write(*,*) 'vitesse_affichage', rang, "gathered, waiting..."
+    call MPI_BARRIER(comm2d, ierr)
+    write(*,*) 'vitesse_affichage', rang, "gathered, done"
+
+  END SUBROUTINE vitesse_affichage
 
   FUNCTION erreur_globale(u, u_nouveau)
     !************
@@ -237,11 +269,13 @@ CONTAINS
     INTEGER, DIMENSION(rang_tableau) :: profil_tab_vue, profil_sous_tab_vue, coord_debut_vue
     TYPE(MPI_Datatype)               :: type_sous_tab, type_sous_tab_vue
     ! Error handling
-    CHARACTER(LEN=MPI_MAX_ERROR_STRING) :: erreur
-    INTEGER                             :: longueur_erreur
+    ! CHARACTER(LEN=MPI_MAX_ERROR_STRING) :: erreur
+    ! INTEGER                             :: longueur_erreur
 
+    write(*,*) 'ecrire_mpi', rang, "waiting"
     !Ouverture du fichier "donnees.dat" en écriture
     CALL MPI_FILE_OPEN(comm2d, 'donnees.dat', MPI_MODE_WRONLY + MPI_MODE_CREATE, MPI_INFO_NULL, descripteur, ierr)
+    CALL MPI_BARRIER(comm2d, ierr)
 
     !Ouverture du fichier "donnees.dat" en écriture
     CALL MPI_FILE_OPEN(comm2d, "donnees.dat", &
@@ -300,7 +334,7 @@ CONTAINS
     ! Nettoyage des types MPI
     CALL MPI_TYPE_FREE(type_sous_tab)
     CALL MPI_TYPE_FREE(type_sous_tab_vue)
-
+    write(*,*) 'ecrire_mpi', rang, "done"
   END SUBROUTINE ecrire_mpi
 
   SUBROUTINE finalisation_mpi
@@ -309,8 +343,12 @@ CONTAINS
     !************
     ! Nettoyages des types et comm MPI
     call MPI_COMM_FREE(comm2d)
+    write(*,*) 'finalisation_mpi', rang, "waiting for 2"
     call MPI_TYPE_FREE(type_ligne)
+    write(*,*) 'finalisation_mpi', rang, "waiting for 3"
     call MPI_TYPE_FREE(type_colonne)
+    write(*,*) 'finalisation_mpi', rang, "waiting for 4"
+    ! call MPI_TYPE_FREE(type_tableau)
     !call MPI_TYPE_FREE(typedp)
     ! Desactivation de MPI
     call MPI_FINALIZE()
@@ -424,9 +462,7 @@ CONTAINS
         end do
       end do
       
-      end subroutine mesh
-    
-
+      end subroutine mesh 
 
 END MODULE parallel
 
