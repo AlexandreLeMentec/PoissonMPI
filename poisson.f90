@@ -42,7 +42,7 @@ PROGRAM poisson
   IMPLICIT NONE
 
   !Solution u et u_nouveau a l'iteration n et n+1
-  REAL(kind=dp), ALLOCATABLE, DIMENSION(:, :) :: u, u_nouveau
+  REAL(kind=dp), ALLOCATABLE, DIMENSION(:, :) :: u, u_nouveau, u_plot, x, y
   !Solution exacte
   REAL(kind=dp), ALLOCATABLE, DIMENSION(:, :) :: u_exact
   !Nombre iterations en temps
@@ -117,6 +117,19 @@ PROGRAM poisson
     !sur le processus 0
     CALL sortie_resultats(u, u_exact)
   END IF
+
+  ! Affichage Paraview
+  call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+  write(*,*) "Gathering speed field..."
+  call gather_speed_field(u,u_plot)
+  call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+  write(*,*) "Writing speed field..."
+  if (rang == 0) then
+    allocate(x(0:ntx+1, 0:nty+1), y(0:ntx+1, 0:nty+1))    
+    call mesh(x,y,ntx,nty)
+    call VTSWriter(0.0,0,ntx,nty,x,y,u_plot,'ini')
+    DEALLOCATE(x,y)
+  end if
  
   !Ecriture des resultats u(sx:ex, sy:ey) 
   !pour chaque processus
