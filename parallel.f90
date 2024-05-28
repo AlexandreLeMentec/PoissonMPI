@@ -439,24 +439,29 @@ CONTAINS
     SUBROUTINE gather_speed_field(u, u_global)
       REAL(kind=dp), ALLOCATABLE, DIMENSION(:,:), INTENT(IN) :: u
       REAL(kind=dp), ALLOCATABLE, DIMENSION(:,:), INTENT(OUT) :: u_global
-      INTEGER :: rank, size, ierr, send_count, recv_count, i, j
+      INTEGER :: rank, size, ierr, send_count, recv_count, i, j, ii, jj
       INTEGER :: nx_local, ny_local, global_x, global_y
   
       CALL MPI_COMM_RANK(comm2d, rank, ierr)
       CALL MPI_COMM_SIZE(comm2d, size, ierr)
   
       ! Local sizes
-      nx_local = ex - sx + 1 - 2
-      ny_local = ey - sy + 1 - 2 
+      nx_local = ex - sx + 1 
+      ny_local = ey - sy + 1  
+      write(*,*)"nx_local=",nx_local, "ny_local=",ny_local
   
       send_count = nx_local * ny_local
-  
+
       ! Allocate the global array on all processes
       ALLOCATE(u_global(ntx, nty))
-  
-      CALL MPI_ALLGATHER(u(2:nx_local-1,2:ny_local-1), send_count, MPI_DOUBLE_PRECISION, &
-                         u_global, send_count, MPI_DOUBLE_PRECISION, comm2d, ierr)
-  
+
+      !CALL MPI_ALLGATHER(u(2:nx_local-1,2:ny_local-1), send_count, MPI_DOUBLE_PRECISION, &
+      !                   u_global, send_count, MPI_DOUBLE_PRECISION, comm2d, ierr)
+      do j = 1, ny_local
+        do i = 1, nx_local
+          u_global(i, j) = u(i, j)
+        end do
+      end do
       ! Barrier to ensure all processes complete gathering
       CALL MPI_BARRIER(comm2d, ierr)
   END SUBROUTINE gather_speed_field
