@@ -455,13 +455,13 @@ CONTAINS
       ! Allocate the global array on all processes
       ALLOCATE(u_global(ntx, nty))
 
-      !CALL MPI_ALLGATHER(u(2:nx_local-1,2:ny_local-1), send_count, MPI_DOUBLE_PRECISION, &
-      !                   u_global, send_count, MPI_DOUBLE_PRECISION, comm2d, ierr)
-      do j = 1, ny_local
-        do i = 1, nx_local
-          u_global(i, j) = u(i, j)
-        end do
-      end do
+      CALL MPI_ALLGATHER(u(sx:ex,sy:ey), send_count, MPI_DOUBLE_PRECISION, &
+                         u_global, send_count, MPI_DOUBLE_PRECISION, comm2d, ierr)
+      !do j = 1, ny_local
+      !  do i = 1, nx_local
+      !    u_global(i, j) = u(i, j)
+      !  end do
+      !end do
       ! Barrier to ensure all processes complete gathering
       CALL MPI_BARRIER(comm2d, ierr)
   END SUBROUTINE gather_speed_field
