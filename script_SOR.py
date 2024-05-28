@@ -1,13 +1,13 @@
 import subprocess
 import re
 import os
-import matplotlib.pyplot as plt
-import numpy as np
+# import matplotlib.pyplot as plt
+# import numpy as np
 
 # Valeurs à tester 
-mesh = [120,240,480]
+mesh = [120]
 #mesh = [120]
-proc = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+proc = [1,2,3,4,5,6,8]
 #proc = [1,2]
 L_temps_execution = [[0 for i in range(len(proc))] for j in range(len(mesh))]
 U_exact_calcule = [[[] for i in range(len(proc))] for j in range(len(mesh))]
@@ -32,6 +32,7 @@ for k in range(len(mesh)):
         for i in range(len(data)):
             if i == 0:  
                 fichier.write(str(mesh[k])+" !"+"\n")
+                #print("zizi")
             elif i == 1:   
                 fichier.write(str(mesh[k])+" !"+"\n")
         fichier.close()
@@ -77,10 +78,11 @@ for i in range(len(data2)):
 fichier.close()
 
 # Write data to file
-fichier = open("data.txt", "w")
+fichier = open("data.csv", "w")
 for k in range(len(mesh)):
     for l in range(len(proc)):
-        fichier.write("New data" + " " + str(mesh[k]) + " " + str(proc[l]) + " " + str(L_temps_execution[k][l]) + "\n")
+        fichier.write("")
+        fichier.write("New_data" + " " + str(mesh[k]) + " " + str(proc[l]) + " " + str(L_temps_execution[k][l]) + "\n")
         for i in range(len(U_exact_calcule[k][l])):
             fichier.write(str(U_exact_calcule[k][l][i]) + " " + str(U_calcule[k][l][i]) + "\n")
 fichier.close()
