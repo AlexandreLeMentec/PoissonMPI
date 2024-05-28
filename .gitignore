@@ -4,3 +4,4 @@ poisson
 *.vts
 *.txt
 donnees.dat
+*.pvd
