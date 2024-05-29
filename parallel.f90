@@ -527,5 +527,21 @@ CONTAINS
       deallocate(u_inter_recu)
   END SUBROUTINE gather_speed_field
 
+  SUBROUTINE moyenne(u, moy)
+    REAL(kind=dp), ALLOCATABLE, DIMENSION(:,:), INTENT(IN) :: u
+    REAL(kind=dp), intent(out) :: moy
+    REAL(kind=dp) :: somme
+    INTEGER :: i, j
+
+    somme = 0.0_dp
+    DO j = 1, nty
+      DO i = 1, ntx
+        somme = somme + u(i, j)
+      END DO
+    END DO
+
+    moy = somme / (ntx * nty)
+  END SUBROUTINE moyenne
+
 END MODULE parallel
 

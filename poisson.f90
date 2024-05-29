@@ -50,7 +50,7 @@ PROGRAM poisson
   !Convergence
   REAL(kind=dp)                             :: diffnorm
   !Mesure du temps
-  REAL(kind=dp)                             :: t1, t2
+  REAL(kind=dp)                             :: t1, t2, moy
   !Test de convergence
   LOGICAL                                  :: convergence
 
@@ -100,7 +100,7 @@ PROGRAM poisson
     convergence = (diffnorm < eps)
 
     !Affichage pour le processus 0 de la difference
-    IF ((rang == 0) .AND. (MOD(it, 100) == 0)) THEN
+    IF ((rang == 0) .AND. (MOD(it, 1000) == 0)) THEN
        PRINT *, 'Iteration ', it, ' erreur_globale = ', diffnorm
     END IF
 
@@ -130,8 +130,12 @@ PROGRAM poisson
     call mesh(x,y,ntx,nty)
     call VTSWriter(0.0,0,ntx,nty,x,y,u_plot,'ini')
     DEALLOCATE(x,y)
+    call moyenne(u_plot,moy)
+    !write(*,*) "Moyenne = ",moy  
+    write(*,*) "Erreur = ", moy - 1/36.0_dp
+    deallocate(u_plot)
   end if
- 
+
   !Ecriture des resultats u(sx:ex, sy:ey) 
   !pour chaque processus
   CALL ecrire_mpi(u)
