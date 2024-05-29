@@ -123,6 +123,7 @@ PROGRAM poisson
   write(*,*) "Gathering speed field..."
   call gather_speed_field(u,u_plot)
   call MPI_BARRIER(MPI_COMM_WORLD, ierr)
+  
   write(*,*) "Writing speed field..."
   if (rang == 0) then
     allocate(x(0:ntx+1, 0:nty+1), y(0:ntx+1, 0:nty+1))    
