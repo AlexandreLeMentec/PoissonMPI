@@ -6,9 +6,9 @@ import os
 
 # Valeurs à tester 
 mesh = [120,240,480]
-# mesh = [12]
+#mesh = [1]
 proc = [1,2,3,4,5,6,8,9,10,12,15,16]
-# proc = [1,2]
+#proc = [1,2]
 L_temps_execution = [[0 for i in range(len(proc))] for j in range(len(mesh))]
 U_exact_calcule = [[[] for i in range(len(proc))] for j in range(len(mesh))]
 U_calcule = [[[] for i in range(len(proc))] for j in range(len(mesh))]
@@ -65,7 +65,11 @@ for k in range(len(mesh)):
                 print("Temps d'exécution complet :", temps_execution_str)
                 L_temps_execution[k][l] = float(temps_execution_str)
                 Nb_iter[k][l] = iteration
-                Error[k][l] = float(error_match.group(1))
+                if error_match :
+                    read_error = float(error_match.group(1))
+                    Error[k][l] = read_error
+                else:
+                    Error[k][l] = 0
 
                 pattern = re.compile(r'u_exact=\s+([\d.E+-]+)\s+u\s+=\s+([\d.E+-]+)')
                 matches = pattern.findall(result.stdout)
