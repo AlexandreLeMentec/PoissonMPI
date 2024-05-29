@@ -100,9 +100,9 @@ PROGRAM poisson
     convergence = (diffnorm < eps)
 
     !Affichage pour le processus 0 de la difference
-    ! IF ((rang == 0) .AND. (MOD(it, 100) == 0)) THEN
-    !   PRINT *, 'Iteration ', it, ' erreur_globale = ', diffnorm
-    ! END IF
+    IF ((rang == 0) .AND. (MOD(it, 100) == 0)) THEN
+       PRINT *, 'Iteration ', it, ' erreur_globale = ', diffnorm
+    END IF
 
   END DO
 
