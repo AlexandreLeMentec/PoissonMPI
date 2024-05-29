@@ -12,7 +12,7 @@ MODULE  type_params
   !Indices de debut et de fin dans chaque direction
   INTEGER                                   :: sx, ex, sy, ey
   !Nombre iterations maximum en temps
-  INTEGER, PARAMETER                        :: it_max=10000000
+  INTEGER, PARAMETER                        :: it_max=1000000
   ! Kind pour double precision
   integer, parameter                        :: dp = selected_real_kind(15,307)
   !Argument muet de la fonction F90 EPSILON

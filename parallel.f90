@@ -120,32 +120,37 @@ CONTAINS
     !************
     !Calcul des processus voisins pour chaque processus
     !************
-
-    !Recherche des voisins Nord et Sud
-    IF (coords(2) - 1 < 0  .AND. .NOT. periods(2)) THEN
-      voisin(N) = MPI_PROC_NULL ! Ici on utilise MPI_PROC_NULL pour annuler la communication avec ce processeur sans passer par un IF
-    ELSE
-      call MPI_CART_RANK(comm2d, [coords(1), coords(2)-1], voisin(N), ierr)
-    END IF
-
-    IF (coords(2) + 1 > dims(2)-1  .AND. .NOT. periods(2)) THEN
-      voisin(S) = MPI_PROC_NULL
-    ELSE
-      call MPI_CART_RANK(comm2d, [coords(1), coords(2)+1], voisin(S), ierr)
-    END IF
+        !Recherche des voisins Nord et Sud
+    CALL MPI_CART_SHIFT(comm2d, 0, 1, voisin(N), voisin(S))
 
     !Recherche des voisins Ouest et Est
-    IF (coords(1) - 1 < 0  .AND. .NOT. periods(1)) THEN
-      voisin(W) = MPI_PROC_NULL
-    ELSE
-      call MPI_CART_RANK(comm2d, [coords(1)-1, coords(2)], voisin(W), ierr)
-    END IF
+    CALL MPI_CART_SHIFT(comm2d, 1, 1, voisin(W), voisin(E))
 
-    IF (coords(1) + 1> dims(1)-1  .AND. .NOT. periods(1)) THEN
-      voisin(E) = MPI_PROC_NULL
-    ELSE
-      call MPI_CART_RANK(comm2d, [coords(1)+1, coords(2)], voisin(E), ierr)
-    END IF
+    ! !Recherche des voisins Nord et Sud
+    ! IF (coords(2) - 1 < 0  .AND. .NOT. periods(2)) THEN
+    !   voisin(N) = MPI_PROC_NULL ! Ici on utilise MPI_PROC_NULL pour annuler la communication avec ce processeur sans passer par un IF
+    ! ELSE
+    !   call MPI_CART_RANK(comm2d, [coords(1), coords(2)-1], voisin(N), ierr)
+    ! END IF
+
+    ! IF (coords(2) + 1 > dims(2)-1  .AND. .NOT. periods(2)) THEN
+    !   voisin(S) = MPI_PROC_NULL
+    ! ELSE
+    !   call MPI_CART_RANK(comm2d, [coords(1), coords(2)+1], voisin(S), ierr)
+    ! END IF
+
+    ! Recherche des voisins Ouest et Est
+    ! IF (coords(1) - 1 < 0  .AND. .NOT. periods(1)) THEN
+    !   voisin(W) = MPI_PROC_NULL
+    ! ELSE
+    !   call MPI_CART_RANK(comm2d, [coords(1)-1, coords(2)], voisin(W), ierr)
+    ! END IF
+
+    ! IF (coords(1) + 1> dims(1)-1  .AND. .NOT. periods(1)) THEN
+    !   voisin(E) = MPI_PROC_NULL
+    ! ELSE
+    !   call MPI_CART_RANK(comm2d, [coords(1)+1, coords(2)], voisin(E), ierr)
+    ! END IF
 
     WRITE (*,'(A,i4,A,i4,A,i4,A,i4,A,i4)') "Processus ", rang, &
      " a pour voisin : N", voisin(N), " E", voisin(E), &
@@ -180,28 +185,29 @@ CONTAINS
     !************
 
     REAL(kind=dp), ALLOCATABLE, DIMENSION(:, :), INTENT(inout) :: u
-    INTEGER                                                    :: test
+    REAL(kind=dp), DIMENSION(1,ey-sy+1)                        :: testv
+    REAL(kind=dp), DIMENSION(ex-sx+1,1)                        :: testh
 
     !Constantes MPI
     INTEGER, PARAMETER                   :: etiquette=125
     TYPE(MPI_Status)                     :: statut
 
-    !Envoi au voisin N et reception du voisin 
-    CALL MPI_SENDRECV(u(sx, sy), 1, type_ligne,   voisin(N), &
-         etiquette, u(ex+1, sy), 1, type_ligne,   voisin(S), etiquette, comm2d, statut, code)
+    !Envoi au voisin N et reception du voisin S
+    CALL MPI_SENDRECV(u(sx, sy), 1, type_ligne,   voisin(N), etiquette, u(ex+1, sy), 1, type_ligne,   voisin(S), &
+         etiquette, comm2d, statut)
 
     !Envoi au voisin S et reception du voisin N
-    CALL MPI_SENDRECV(u(ex, sy), 1, type_ligne,   voisin(S), &
-         etiquette, u(sx-1, sy), 1, type_ligne,   voisin(N), etiquette, comm2d, statut, code)
+    CALL MPI_SENDRECV(u(ex, sy), 1, type_ligne,   voisin(S), etiquette, u(sx-1, sy), 1, type_ligne,   voisin(N), &
+         etiquette, comm2d, statut)
 
     !Envoi au voisin W et reception du voisin E
-    CALL MPI_SENDRECV(u(sx, sy), 1, type_colonne, voisin(W), &
-         etiquette, u(sx, ey+1), 1, type_colonne, voisin(E), etiquette, comm2d, statut, code)
+    CALL MPI_SENDRECV(u(sx, sy), 1, type_colonne, voisin(W), etiquette, u(sx, ey+1), 1, type_colonne, voisin(E), &
+         etiquette, comm2d, statut)
 
     !Envoi au voisin E et  reception du voisin W
-    CALL MPI_SENDRECV(u(sx, ey), 1, type_colonne, voisin(E), &
-         etiquette, u(sx, sy-1), 1, type_colonne, voisin(W), etiquette, comm2d, statut, code)
-    
+    CALL MPI_SENDRECV(u(sx, ey), 1, type_colonne, voisin(E), etiquette, u(sx, sy-1), 1, type_colonne, voisin(W), &
+         etiquette, comm2d, statut)
+
   END SUBROUTINE communication
 
   FUNCTION erreur_globale(u, u_nouveau)
@@ -217,7 +223,7 @@ CONTAINS
 
     !Calcul de l'erreur sur tous les sous-domaines
 
-    call MPI_Allreduce(erreur_locale, erreur_globale, 8, typedp, MPI_SUM, comm2d)
+    call MPI_Allreduce(erreur_locale, erreur_globale, 1, typedp, MPI_MAX, comm2d)
 
   END FUNCTION erreur_globale
 
