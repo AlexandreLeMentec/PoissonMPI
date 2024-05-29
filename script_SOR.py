@@ -6,9 +6,9 @@ import os
 
 # Valeurs à tester 
 mesh = [120,240,480]
-mesh = [12]
+# mesh = [12]
 proc = [1,2,3,4,5,6,8,9,10,12,15,16]
-proc = [1,2]
+# proc = [1,2]
 L_temps_execution = [[0 for i in range(len(proc))] for j in range(len(mesh))]
 U_exact_calcule = [[[] for i in range(len(proc))] for j in range(len(mesh))]
 U_calcule = [[[] for i in range(len(proc))] for j in range(len(mesh))]
