@@ -451,7 +451,7 @@ CONTAINS
       ! Local sizes
       nx_local = ex - sx + 1 
       ny_local = ey - sy + 1  
-      write(*,*)"nx_local=",nx_local, "ny_local=",ny_local
+      !write(*,*)"nx_local=",nx_local, "ny_local=",ny_local
 
       ! Create an array to store the field withou ghost cells
       ALLOCATE(u_inter(sx:ex, sy:ey))
@@ -463,10 +463,10 @@ CONTAINS
         END DO
       END DO
 
-      if (rank == 0) then
-        write(*,*)"u =", u
-        write(*,*)"u_inter =", u_inter
-      end if
+      !if (rank == 0) then
+      !  write(*,*)"u =", u
+      !  write(*,*)"u_inter =", u_inter
+      !end if
       send_count = nx_local * ny_local
 
       ! Allocate the global array on all processes
@@ -486,8 +486,8 @@ CONTAINS
         CALL MPI_SEND(ex, 1, MPI_INTEGER, 0, rank, comm2d, ierr)
         CALL MPI_SEND(sy, 1, MPI_INTEGER, 0, rank, comm2d, ierr)
         CALL MPI_SEND(ey, 1, MPI_INTEGER, 0, rank, comm2d, ierr)
-        write(*,*)rank, " a envoyé u_inter=", u_inter
-        write(*,*)rank, " a envoyé sx=", sx, "ex=", ex, "sy=", sy, "ey=", ey
+        !write(*,*)rank, " a envoyé u_inter=", u_inter
+        !write(*,*)rank, " a envoyé sx=", sx, "ex=", ex, "sy=", sy, "ey=", ey
       end if
 
       ! Receive u_inter from all other ranks
@@ -499,17 +499,17 @@ CONTAINS
           CALL MPI_RECV(ex_co, 1, MPI_INTEGER, k, k, comm2d,statut, ierr)
           CALL MPI_RECV(sy_co, 1, MPI_INTEGER, k, k, comm2d,statut, ierr)
           CALL MPI_RECV(ey_co, 1, MPI_INTEGER, k, k, comm2d,statut, ierr)
-          write(*,*)rank, " a reçu u_inter=", u_inter, "de rank=", k, "shape=", SHAPE(u_inter_recu)
-          write(*,*)rank, " a reçu sx=", sx_co, "ex=", ex_co, "sy=", sy_co, "ey=", ey_co
+          !write(*,*)rank, " a reçu u_inter=", u_inter, "de rank=", k, "shape=", SHAPE(u_inter_recu)
+          !write(*,*)rank, " a reçu sx=", sx_co, "ex=", ex_co, "sy=", sy_co, "ey=", ey_co
           do j = sy_co, ey_co
             do i = sx_co, ex_co
-              write(*,*) "shape=", SHAPE(u_global), "i=", i, "j=", j, "i-sx_co=", i-sx_co, "j-sy_co=", j-sy_co
+              !write(*,*) "shape=", SHAPE(u_global), "i=", i, "j=", j, "i-sx_co=", i-sx_co, "j-sy_co=", j-sy_co
               u_global(i, j) = u_inter_recu(i-sx_co+1, j-sy_co+1)
             end do
           end do
         end do
         ! Copy the field from rank 0
-        write(*,*) "on rank=", rank, "sx=", sx, "ex=", ex, "sy=", sy, "ey=", ey
+        ! write(*,*) "on rank=", rank, "sx=", sx, "ex=", ex, "sy=", sy, "ey=", ey
         do j = sy, ey
           do i = sx, ex
             u_global(i, j) = u_inter(i, j)
@@ -519,10 +519,10 @@ CONTAINS
 
       ! Barrier to ensure all processes complete gathering
       CALL MPI_BARRIER(comm2d, ierr)
-      if (rank == 0) then
-        write(*,*)"u_inter reçu=", u_inter
-        write(*,*)"u_global =", u_global
-      end if
+      !if (rank == 0) then
+      !  write(*,*)"u_inter reçu=", u_inter
+      !  write(*,*)"u_global =", u_global
+      !end if
       deallocate(u_inter)
       deallocate(u_inter_recu)
   END SUBROUTINE gather_speed_field
