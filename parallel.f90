@@ -355,8 +355,8 @@ CONTAINS
   
     real, intent(in)                       :: Time
     integer, intent(in)                    :: Step, nx, ny
-    real, dimension(nx+1,ny+1), intent(in) :: x, y
-    real, dimension(nx,ny)    , intent(in) :: T
+    real(kind=dp), dimension(nx+1,ny+1), intent(in) :: x, y
+    real(kind=dp), dimension(nx,ny)    , intent(in) :: T
     character(3), intent(in)               :: opt
   
     character(100) :: num2char
