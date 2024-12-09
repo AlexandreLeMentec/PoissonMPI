@@ -135,7 +135,7 @@ PROGRAM poisson
     call moyenne(u_plot,moy)
     !write(*,*) "Moyenne = ",moy  
     write(*,*) "Erreur = ", moy - 1/36.0_dp
-    write(*,*) "Rang = ", rank_field
+    ! write(*,*) "Rang = ", rank_field
     deallocate(u_plot)
     deallocate(rank_field)
   end if
