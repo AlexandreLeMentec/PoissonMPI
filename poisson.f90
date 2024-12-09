@@ -43,6 +43,7 @@ PROGRAM poisson
 
   !Solution u et u_nouveau a l'iteration n et n+1
   REAL(kind=dp), ALLOCATABLE, DIMENSION(:, :) :: u, u_nouveau, u_plot, x, y
+  INTEGER(kind=dp), ALLOCATABLE, DIMENSION(:,:) :: rank_field
   !Solution exacte
   REAL(kind=dp), ALLOCATABLE, DIMENSION(:, :) :: u_exact
   !Nombre iterations en temps
@@ -122,18 +123,21 @@ PROGRAM poisson
   call MPI_BARRIER(MPI_COMM_WORLD, ierr)
   !write(*,*) "Gathering speed field..."
   call gather_speed_field(u,u_plot)
+  call gather_rank_field(rank_field)
   call MPI_BARRIER(MPI_COMM_WORLD, ierr)
   
   !write(*,*) "Writing speed field..."
   if (rang == 0) then
     allocate(x(0:ntx+1, 0:nty+1), y(0:ntx+1, 0:nty+1))    
     call mesh(x,y,ntx,nty)
-    call VTSWriter(0.0,0,ntx,nty,x,y,u_plot,'ini')
+    call VTSWriter(0.0,0,ntx,nty,x,y,u_plot,rank_field,'ini')
     DEALLOCATE(x,y)
     call moyenne(u_plot,moy)
     !write(*,*) "Moyenne = ",moy  
     write(*,*) "Erreur = ", moy - 1/36.0_dp
+    write(*,*) "Rang = ", rank_field
     deallocate(u_plot)
+    deallocate(rank_field)
   end if
 
   !Ecriture des resultats u(sx:ex, sy:ey) 

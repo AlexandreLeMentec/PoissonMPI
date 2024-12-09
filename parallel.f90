@@ -327,7 +327,7 @@ CONTAINS
 
   END SUBROUTINE finalisation_mpi
 
-  subroutine VTSWriter(Time,Step,nx,ny,x,y,T,opt)
+  subroutine VTSWriter(Time,Step,nx,ny,x,y,T,Tab_Rang,opt)
   !-----------------------------------------------------------------------------#
   !  Time    : Reel, temps physique                                             #
   !  Step    : Entier, pas de temps = numero dans le nom de fichier,            #
@@ -357,6 +357,7 @@ CONTAINS
     integer, intent(in)                    :: Step, nx, ny
     real(kind=dp), dimension(nx+1,ny+1), intent(in) :: x, y
     real(kind=dp), dimension(nx,ny)    , intent(in) :: T
+    integer(kind=dp), dimension(nx,ny),intent(in)            :: Tab_Rang
     character(3), intent(in)               :: opt
   
     character(100) :: num2char
@@ -387,6 +388,13 @@ CONTAINS
     write(num2char,*) (nx)*(ny)
     DO j=1,ny
        write(8,formatperso) (T(i,j),i=1,nx)
+    END DO
+
+      ! Ecriture du scalaire (temperature / concentration)
+    write(8,'(a)') '<DataArray type="Float32" Name="Rank"/>'
+    write(num2char,*) (nx)*(ny)
+    DO j=1,ny
+       write(8,*) (Tab_Rang(i,j),i=1,nx)
     END DO
 
   
@@ -542,6 +550,98 @@ CONTAINS
 
     moy = somme / (ntx * nty)
   END SUBROUTINE moyenne
+
+
+SUBROUTINE gather_rank_field(rank_global)
+  ! REAL(kind=dp), ALLOCATABLE, DIMENSION(:,:), INTENT(IN) :: u
+  INTEGER(kind=dp), ALLOCATABLE, DIMENSION(:,:), INTENT(OUT) :: rank_global
+  INTEGER(kind=dp), ALLOCATABLE, DIMENSION(:,:) :: rank_inter, rank_inter_recu
+  INTEGER :: rank, size, ierr, send_count, recv_count, i, j, k
+  INTEGER :: nx_local, ny_local, global_x, global_y
+  INTEGER :: sx_co, ex_co, sy_co, ey_co
+  TYPE(MPI_Status) :: statut
+
+  CALL MPI_COMM_RANK(comm2d, rank, ierr)
+  CALL MPI_COMM_SIZE(comm2d, size, ierr)
+
+  ! Local sizes
+  nx_local = ex - sx + 1 
+  ny_local = ey - sy + 1  
+  !write(*,*)"nx_local=",nx_local, "ny_local=",ny_local
+
+  ! Create an array to store the field withou ghost cells
+  ALLOCATE(rank_inter(sx:ex, sy:ey))
+  ALLOCATE(rank_inter_recu(sx:ex, sy:ey))
+  ! Copy the field without ghost cells
+  DO j = sy,ey
+    DO i = sx,ex
+      rank_inter(i, j) = rank
+    END DO
+  END DO
+
+  !if (rank == 0) then
+  !  write(*,*)"u =", u
+  !  write(*,*)"u_inter =", u_inter
+  !end if
+  send_count = nx_local * ny_local
+
+  ! Allocate the global array on all processes
+  ALLOCATE(rank_global(ntx, nty))
+
+  !CALL MPI_ALLGATHER(u_inter, send_count, MPI_DOUBLE_PRECISION, &
+  !                   u_global, send_count, MPI_DOUBLE_PRECISION, comm2d, ierr)
+  !if (rank /= 0) then
+  !  CALL MPI_BCAST(u_inter, send_count, MPI_DOUBLE_PRECISION, rank, comm2d, ierr)
+  !end if
+  !write(*,*)"u_inter envoyé=", u_inter, "sur rang=", rank
+
+  ! SSend u_inter to rank 0
+  if (rank /= 0) then
+    CALL MPI_SEND(rank_inter, send_count, MPI_DOUBLE_PRECISION, 0, rank, comm2d, ierr)
+    CALL MPI_SEND(sx, 1, MPI_INTEGER, 0, rank, comm2d, ierr)
+    CALL MPI_SEND(ex, 1, MPI_INTEGER, 0, rank, comm2d, ierr)
+    CALL MPI_SEND(sy, 1, MPI_INTEGER, 0, rank, comm2d, ierr)
+    CALL MPI_SEND(ey, 1, MPI_INTEGER, 0, rank, comm2d, ierr)
+    !write(*,*)rank, " a envoyé u_inter=", u_inter
+    !write(*,*)rank, " a envoyé sx=", sx, "ex=", ex, "sy=", sy, "ey=", ey
+  end if
+
+  ! Receive u_inter from all other ranks
+  if (rank == 0) then 
+    ! Copy the field from other rank
+    do k = 1, size-1
+      CALL MPI_RECV(rank_inter_recu, send_count, MPI_DOUBLE_PRECISION, k, k, comm2d,statut, ierr)
+      CALL MPI_RECV(sx_co, 1, MPI_INTEGER, k, k, comm2d,statut, ierr)
+      CALL MPI_RECV(ex_co, 1, MPI_INTEGER, k, k, comm2d,statut, ierr)
+      CALL MPI_RECV(sy_co, 1, MPI_INTEGER, k, k, comm2d,statut, ierr)
+      CALL MPI_RECV(ey_co, 1, MPI_INTEGER, k, k, comm2d,statut, ierr)
+      !write(*,*)rank, " a reçu u_inter=", u_inter, "de rank=", k, "shape=", SHAPE(u_inter_recu)
+      !write(*,*)rank, " a reçu sx=", sx_co, "ex=", ex_co, "sy=", sy_co, "ey=", ey_co
+      do j = sy_co, ey_co
+        do i = sx_co, ex_co
+          !write(*,*) "shape=", SHAPE(u_global), "i=", i, "j=", j, "i-sx_co=", i-sx_co, "j-sy_co=", j-sy_co
+          rank_global(i, j) = rank_inter_recu(i-sx_co+1, j-sy_co+1)
+        end do
+      end do
+    end do
+    ! Copy the field from rank 0
+    ! write(*,*) "on rank=", rank, "sx=", sx, "ex=", ex, "sy=", sy, "ey=", ey
+    do j = sy, ey
+      do i = sx, ex
+        rank_global(i, j) = rank_inter(i, j)
+      end do
+    end do
+  end if
+
+  ! Barrier to ensure all processes complete gathering
+  CALL MPI_BARRIER(comm2d, ierr)
+  !if (rank == 0) then
+  !  write(*,*)"u_inter reçu=", u_inter
+  !  write(*,*)"u_global =", u_global
+  !end if
+  deallocate(rank_inter)
+  deallocate(rank_inter_recu)
+END SUBROUTINE gather_rank_field
 
 END MODULE parallel
 
