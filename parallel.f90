@@ -421,7 +421,7 @@ CONTAINS
     implicit none
     
     integer, intent(in) :: nx,ny
-    real, dimension(nx+1,ny+1), intent(out) :: x,y
+    real(kind=dp), dimension(nx+1,ny+1), intent(out) :: x,y
     
     integer ::i,j
     
