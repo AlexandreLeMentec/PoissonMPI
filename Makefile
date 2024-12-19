@@ -6,7 +6,7 @@
 ###############################################################################
 SHELL := /bin/bash
 # Compilateur et options de compilation et de link
-include arch/make_inc
+include arch/make_gnu
 
 OBJS = type_params.o parallel.o calcul_poisson.o poisson.o
 OBJS1 = read.o
